@@ -77,7 +77,7 @@
         android:id="@+id/totalPerPerson"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:text="Total per Person:"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="@+id/guideline"
@@ -92,7 +92,6 @@
         android:onClick="onRadioButtonClicked"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/tipPercent">
 
@@ -121,5 +120,102 @@
             android:text="20%" />
 
     </RadioGroup>
+
+    <TextView
+        android:id="@+id/tipAmountValue"
+        android:layout_width="115dp"
+        android:layout_height="21dp"
+        android:background="@color/returnValueBG"
+        android:text="@string/startValue"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/billTotalValue"
+        app:layout_constraintTop_toTopOf="@+id/tipAmount" />
+
+    <TextView
+        android:id="@+id/totalWithTipValue"
+        android:layout_width="115dp"
+        android:layout_height="wrap_content"
+        android:background="@color/returnValueBG"
+        android:text="@string/startValue"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/tipAmountValue"
+        app:layout_constraintTop_toTopOf="@+id/totalWithTip" />
+
+    <TextView
+        android:id="@+id/overageValue"
+        android:layout_width="115dp"
+        android:layout_height="wrap_content"
+        android:background="@color/returnValueBG"
+        android:text="@string/startValue"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/totalPerPersonValue"
+        app:layout_constraintTop_toTopOf="@+id/overage" />
+
+    <TextView
+        android:id="@+id/totalPerPersonValue"
+        android:layout_width="115dp"
+        android:layout_height="wrap_content"
+        android:background="@color/returnValueBG"
+        android:text="@string/startValue"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@+id/totalWithTipValue"
+        app:layout_constraintTop_toTopOf="@+id/totalPerPerson" />
+
+    <EditText
+        android:id="@+id/billTotalValue"
+        android:layout_width="115dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="84dp"
+        android:layout_marginEnd="10dp"
+        android:background="@color/entryBoxBG"
+        android:ems="10"
+        android:hint="@string/startValue"
+        android:inputType="numberDecimal"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/billWTax"
+        app:layout_constraintTop_toTopOf="@+id/billWTax" />
+
+    <EditText
+        android:id="@+id/numPeopleValue"
+        android:layout_width="50dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:background="@color/entryBoxBG"
+        android:ems="10"
+        android:hint="$0"
+        android:inputType="number"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/button2"
+        app:layout_constraintStart_toEndOf="@+id/numPeople"
+        app:layout_constraintTop_toTopOf="@+id/button2"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/clearBtn"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Clear"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/overage" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Go"
+        app:layout_constraintBottom_toBottomOf="@+id/numPeople"
+        app:layout_constraintEnd_toEndOf="@+id/totalWithTipValue"
+        app:layout_constraintTop_toTopOf="@+id/numPeople" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
