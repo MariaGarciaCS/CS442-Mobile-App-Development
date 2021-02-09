@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
         numPeopleVal = Integer.parseInt(numPeople.getText().toString());
 
         //Calculate Values
-        totalPerPersonVal = calcTotalPerPerson(numPeopleVal, billTotalVal);
-        overageVal = calcOverage(numPeopleVal, totalPerPersonVal, billTotalVal);
+        totalPerPersonVal = calcTotalPerPerson(numPeopleVal, totalWithTipVal);
+        overageVal = calcOverage(numPeopleVal, totalPerPersonVal, totalWithTipVal);
 
         //Display Values
         totalPerPerson.setText("$" + df2.format(totalPerPersonVal));
@@ -91,9 +93,10 @@ public class MainActivity extends AppCompatActivity {
         return tip + bill;
     }
     public double calcTotalPerPerson(int numPeople, double bill){
-        return bill / numPeople;
+        BigDecimal cost = new BigDecimal(bill / numPeople).setScale(2, RoundingMode.UP);
+        return cost.doubleValue();
     }
     public double calcOverage(int numPeople, double costPerPerson, double bill){
-        return bill - (numPeople * costPerPerson);
+        return (numPeople * costPerPerson) - bill;
     }
 }
