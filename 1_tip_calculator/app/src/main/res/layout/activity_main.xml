@@ -99,24 +99,28 @@
             android:id="@+id/twelvePercent"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
             android:text="12%" />
 
         <RadioButton
             android:id="@+id/fifteenPercent"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
             android:text="15%" />
 
         <RadioButton
             android:id="@+id/eighteenPercent"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
             android:text="18%" />
 
         <RadioButton
             android:id="@+id/twentyPercent"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
             android:text="20%" />
 
     </RadioGroup>
@@ -204,7 +208,10 @@
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:background="@color/colorPrimary"
+        android:onClick="onClearClicked"
         android:text="Clear"
+        android:textColor="#FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/overage" />
@@ -213,7 +220,10 @@
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:background="@color/colorPrimary"
+        android:onClick="onGoClicked"
         android:text="Go"
+        android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="@+id/numPeople"
         app:layout_constraintEnd_toEndOf="@+id/totalWithTipValue"
         app:layout_constraintTop_toTopOf="@+id/numPeople" />

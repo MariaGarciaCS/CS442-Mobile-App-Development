@@ -4,10 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RadioButton;
 
 public class MainActivity extends AppCompatActivity {
     public double tipPercent;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,17 +18,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRadioButtonClicked(View v){
-        boolean checked = ((RadioButton) v).isChecked();
+        if(v.getId() == R.id.twelvePercent){tipPercent = .12; }
+        else if(v.getId() == R.id.fifteenPercent){tipPercent = .15;}
+        else if(v.getId() == R.id.eighteenPercent){tipPercent = .18;}
+        else if(v.getId() == R.id.twentyPercent){tipPercent = .2;}
+    }
 
-        switch (v.getId()){
-            case R.id.twelvePercent:
-                if (checked){tipPercent = 0.12;}
-            case R.id.fifteenPercent:
-                if (checked){tipPercent = 0.15;}
-            case R.id.eighteenPercent:
-                if (checked){tipPercent = 0.18;}
-            case R.id.twentyPercent:
-                if (checked){tipPercent = 0.2;}
-        }
+    public void onGoClicked(View v){
+
+    }
+
+    public void onClearClicked(View v){
+
+    }
+
+    public double calcTip (double percent, double bill){
+        return 0;
+    }
+    public double calcTotalWTip(double tip, double bill){
+        return 0;
+    }
+    public double calcTotalPerPerson(int numPeople, double bill){
+        return 0;
+    }
+    public double calcOverage(int numPeople, double billTotal){
+        return 0;
     }
 }
