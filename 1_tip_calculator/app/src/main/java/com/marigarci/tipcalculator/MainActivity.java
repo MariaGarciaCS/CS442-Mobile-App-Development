@@ -61,10 +61,10 @@ public class MainActivity extends AppCompatActivity {
         overageVal = calcOverage(numPeopleVal, totalPerPersonVal, billTotalVal);
 
         //Display Values
-        tipAmount.setText(df2.format(tipAmountVal));
-        totalWithTip.setText(df2.format(totalWithTipVal));
-        totalPerPerson.setText(df2.format(totalPerPersonVal));
-        overage.setText(df2.format(overageVal));
+        tipAmount.setText("$" + df2.format(tipAmountVal));
+        totalWithTip.setText("$" + df2.format(totalWithTipVal));
+        totalPerPerson.setText("$" + df2.format(totalPerPersonVal));
+        overage.setText("$" + df2.format(overageVal));
     }
 
     public void onClearClicked(View v){
