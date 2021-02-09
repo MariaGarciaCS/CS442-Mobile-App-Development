@@ -43,26 +43,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRadioButtonClicked(View v){
+        //Get User Input
+        billTotalVal = Double.parseDouble(billTotal.getText().toString());
+
+
         if(v.getId() == R.id.twelvePercent){tipPercentVal = .12; }
         else if(v.getId() == R.id.fifteenPercent){tipPercentVal = .15;}
         else if(v.getId() == R.id.eighteenPercent){tipPercentVal = .18;}
         else if(v.getId() == R.id.twentyPercent){tipPercentVal = .2;}
-    }
-
-    public void onGoClicked(View v){
-        //Get User Input
-        billTotalVal = Double.parseDouble(billTotal.getText().toString());
-        numPeopleVal = Integer.parseInt(numPeople.getText().toString());
 
         //Calculate Values
         tipAmountVal = calcTip(tipPercentVal, billTotalVal);
         totalWithTipVal = calcTotalWTip(tipAmountVal, billTotalVal);
-        totalPerPersonVal = calcTotalPerPerson(numPeopleVal, billTotalVal);
-        overageVal = calcOverage(numPeopleVal, totalPerPersonVal, billTotalVal);
 
         //Display Values
         tipAmount.setText("$" + df2.format(tipAmountVal));
         totalWithTip.setText("$" + df2.format(totalWithTipVal));
+
+    }
+
+    public void onGoClicked(View v){
+        //Get Value
+        numPeopleVal = Integer.parseInt(numPeople.getText().toString());
+
+        //Calculate Values
+        totalPerPersonVal = calcTotalPerPerson(numPeopleVal, billTotalVal);
+        overageVal = calcOverage(numPeopleVal, totalPerPersonVal, billTotalVal);
+
+        //Display Values
         totalPerPerson.setText("$" + df2.format(totalPerPersonVal));
         overage.setText("$" + df2.format(overageVal));
     }
@@ -77,15 +85,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public double calcTip (double percent, double bill){
-        return 0;
+        return bill * percent;
     }
     public double calcTotalWTip(double tip, double bill){
-        return 0;
+        return tip + bill;
     }
     public double calcTotalPerPerson(int numPeople, double bill){
-        return 0;
+        return bill / numPeople;
     }
-    public double calcOverage(int numPeople, double costPerPerson, double billTotal){
-        return 0;
+    public double calcOverage(int numPeople, double costPerPerson, double bill){
+        return bill - (numPeople * costPerPerson);
     }
 }
