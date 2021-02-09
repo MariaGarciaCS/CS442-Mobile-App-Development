@@ -68,7 +68,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClearClicked(View v){
-
+        billTotal.getText().clear();
+        numPeople.getText().clear();
+        tipAmount.setText(R.string.startValue);
+        totalWithTip.setText(R.string.startValue);
+        totalPerPerson.setText(R.string.startValue);
+        overage.setText(R.string.startValue);
     }
 
     public double calcTip (double percent, double bill){
