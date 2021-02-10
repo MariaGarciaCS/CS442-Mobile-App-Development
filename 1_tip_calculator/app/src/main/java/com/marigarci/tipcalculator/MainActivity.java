@@ -6,13 +6,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
+    private RadioGroup radioGroup;
     private EditText billTotal;
     private EditText numPeople;
     private TextView tipAmount;
@@ -27,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     public double totalPerPersonVal;
     public double overageVal;
 
-    public DecimalFormat df2 = new DecimalFormat("#.##");
+    public DecimalFormat df2 = new DecimalFormat("0.00");
 
 
 
@@ -42,39 +45,53 @@ public class MainActivity extends AppCompatActivity {
         totalWithTip = findViewById(R.id.totalWithTipValue);
         totalPerPerson = findViewById(R.id.totalPerPersonValue);
         overage = findViewById(R.id.overageValue);
+        radioGroup = findViewById(R.id.tipPercentBtn);
     }
 
     public void onRadioButtonClicked(View v){
-        //Get User Input
-        billTotalVal = Double.parseDouble(billTotal.getText().toString());
+        //check if empty
+        if (billTotal.getText().toString().isEmpty()){
+            radioGroup.clearCheck();
+        }
+        else{
+            //Get User Input
+            billTotalVal = Double.parseDouble(billTotal.getText().toString());
 
+            if(v.getId() == R.id.twelvePercent){tipPercentVal = .12; }
+            else if(v.getId() == R.id.fifteenPercent){tipPercentVal = .15;}
+            else if(v.getId() == R.id.eighteenPercent){tipPercentVal = .18;}
+            else if(v.getId() == R.id.twentyPercent){tipPercentVal = .2;}
 
-        if(v.getId() == R.id.twelvePercent){tipPercentVal = .12; }
-        else if(v.getId() == R.id.fifteenPercent){tipPercentVal = .15;}
-        else if(v.getId() == R.id.eighteenPercent){tipPercentVal = .18;}
-        else if(v.getId() == R.id.twentyPercent){tipPercentVal = .2;}
+            //Calculate Values
+            tipAmountVal = calcTip(tipPercentVal, billTotalVal);
+            totalWithTipVal = calcTotalWTip(tipAmountVal, billTotalVal);
 
-        //Calculate Values
-        tipAmountVal = calcTip(tipPercentVal, billTotalVal);
-        totalWithTipVal = calcTotalWTip(tipAmountVal, billTotalVal);
-
-        //Display Values
-        tipAmount.setText("$" + df2.format(tipAmountVal));
-        totalWithTip.setText("$" + df2.format(totalWithTipVal));
-
+            //Display Values
+            tipAmount.setText("$" + df2.format(tipAmountVal));
+            totalWithTip.setText("$" + df2.format(totalWithTipVal));
+        }
     }
 
     public void onGoClicked(View v){
-        //Get Value
-        numPeopleVal = Integer.parseInt(numPeople.getText().toString());
+        //Check if empty
+        String numPeopleStr = numPeople.getText().toString();
+        if (numPeopleStr.isEmpty() || numPeople.getText().toString().equals("0")){
+            Toast numPeopleError = Toast.makeText(this, "Number of people cannot be zero or empty", Toast.LENGTH_SHORT);
+            numPeopleError.show();
 
-        //Calculate Values
-        totalPerPersonVal = calcTotalPerPerson(numPeopleVal, totalWithTipVal);
-        overageVal = calcOverage(numPeopleVal, totalPerPersonVal, totalWithTipVal);
+        }
+        else {
+            //Get Value
+            numPeopleVal = Integer.parseInt(numPeople.getText().toString());
 
-        //Display Values
-        totalPerPerson.setText("$" + df2.format(totalPerPersonVal));
-        overage.setText("$" + df2.format(overageVal));
+            //Calculate Values
+            totalPerPersonVal = calcTotalPerPerson(numPeopleVal, totalWithTipVal);
+            overageVal = calcOverage(numPeopleVal, totalPerPersonVal, totalWithTipVal);
+
+            //Display Values
+            totalPerPerson.setText("$" + df2.format(totalPerPersonVal));
+            overage.setText("$" + df2.format(overageVal));
+        }
     }
 
     public void onClearClicked(View v){
@@ -84,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         totalWithTip.setText(R.string.startValue);
         totalPerPerson.setText(R.string.startValue);
         overage.setText(R.string.startValue);
+        radioGroup.clearCheck();
     }
 
     public double calcTip (double percent, double bill){

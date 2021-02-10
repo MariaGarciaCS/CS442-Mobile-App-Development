@@ -193,7 +193,7 @@
         android:layout_marginBottom="6dp"
         android:background="@color/entryBoxBG"
         android:ems="10"
-        android:hint="$0"
+        android:hint="0"
         android:inputType="number"
         android:textAlignment="textEnd"
         android:textSize="18sp"
