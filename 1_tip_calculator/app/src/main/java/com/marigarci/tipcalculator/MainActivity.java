@@ -1,5 +1,6 @@
 package com.marigarci.tipcalculator;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -48,6 +49,33 @@ public class MainActivity extends AppCompatActivity {
         radioGroup = findViewById(R.id.tipPercentBtn);
     }
 
+    //BUNDLE
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString("BILL_TOTAL", billTotal.getText().toString());
+        outState.putString("TIP_AMOUNT", tipAmount.getText().toString());
+        outState.putString("NUM_PEOPLE", numPeople.getText().toString());
+        outState.putString("TOTAL_WITH_TIP", totalWithTip.getText().toString());
+        outState.putString("TOTAL_PER_PERSON", totalPerPerson.getText().toString());
+        outState.putString("OVERAGE", overage.getText().toString());
+        //TODO: radiobtn
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+
+        billTotal.setText(savedInstanceState.getString("BILL_TOTAL"));
+        tipAmount.setText(savedInstanceState.getString("TIP_AMOUNT"));
+        numPeople.setText(savedInstanceState.getString("NUM_PEOPLE"));
+        totalWithTip.setText(savedInstanceState.getString("TOTAL_WITH_TIP"));
+        totalPerPerson.setText(savedInstanceState.getString("TOTAL_PER_PERSON"));
+        overage.setText(savedInstanceState.getString("OVERAGE"));
+    }
+
+
+    //BUTTONS
     public void onRadioButtonClicked(View v){
         //check if empty
         if (billTotal.getText().toString().isEmpty()){
@@ -104,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         radioGroup.clearCheck();
     }
 
+    //CALCULATIONS
     public double calcTip (double percent, double bill){
         return bill * percent;
     }
