@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/infoBtn"
-        android:title="@string/info_btn" />
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="@string/info_btn"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/new_note_btn"
-        android:title="@string/new_note_btn" />
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/new_note_btn"
+        app:showAsAction="ifRoom" />
 </menu>
