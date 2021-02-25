@@ -1,5 +1,10 @@
 package com.marigarci.androidnotes;
 
+import android.util.JsonWriter;
+
+import java.io.IOException;
+import java.io.StringWriter;
+
 public class Note {
     public String noteTitle;
     public String noteContent;
@@ -19,7 +24,22 @@ public class Note {
     public String getNoteContent(){return noteContent;}
 
     //JSON
-    
+    public String toString(){
+        try{
+            StringWriter sw = new StringWriter();
+            JsonWriter jsonWriter = new JsonWriter(sw);
+            jsonWriter.setIndent(" ");
+            jsonWriter.beginObject();
+            jsonWriter.name("title").value(getNoteTitle());
+            jsonWriter.name("content").value(getNoteContent());
+            jsonWriter.endObject();
+            jsonWriter.close();
+            return sw.toString();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        return " ";
+    }//end toString
 
-
-}
+}//end class
