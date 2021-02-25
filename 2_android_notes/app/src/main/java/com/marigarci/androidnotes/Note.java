@@ -3,11 +3,13 @@ package com.marigarci.androidnotes;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringWriter;
 
-public class Note {
-    public String noteTitle;
-    public String noteContent;
+public class Note implements Serializable {
+    private String noteTitle;
+    private String noteContent;
+    //TODO: Time
 
     public Note(){
         this.noteTitle = "";

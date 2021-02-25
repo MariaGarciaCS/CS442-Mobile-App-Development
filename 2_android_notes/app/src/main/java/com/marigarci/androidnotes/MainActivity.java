@@ -1,13 +1,16 @@
 package com.marigarci.androidnotes;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+    private static final int EDIT_NOTE_CODE = 1234;
     private final ArrayList<Note> noteList = new ArrayList<>();
 
     @Override
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Options Menu/////////////////////////////////////////
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.opt_menu, menu);
@@ -42,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.infoBtn){
+            openAppInfo();
             return true;
         } else if (item.getItemId() == R.id.new_note_btn){
             return true;
@@ -49,6 +55,34 @@ public class MainActivity extends AppCompatActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+
+    //Other Activities/////////////////////////////////////////
+    public void openAppInfo(){
+        Intent intent = new Intent(this, AppInfo.class);
+        startActivity(intent);
+    }
+    public void openEditNote(View v){
+        Intent intent = new Intent(this, EditNote.class);
+//        intent.putExtra("Title", title);
+//        intent.putExtra("Content", content);
+//        startActivityForResult(intent, EDIT_NOTE_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Note note;
+
+//        if (requestCode == EDIT_NOTE_CODE){
+//            if (resultCode == NOTE_OK){
+//                if (data != null){
+//                    note = (Note) data.getSerializableExtra("Title");
+//                }
+//            }
+//        }
+    }
+
+    //JSON/////////////////////////////////////////
 
     @Override
     protected void onResume() {
