@@ -2,6 +2,7 @@ package com.marigarci.androidnotes;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -11,8 +12,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -41,7 +44,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void saveNote(){
+        Log.d(TAG, "saveNote: Saving JSON File");
 
+        try{
+            FileOutputStream fos = getApplicationContext().openFileOutput(getString(R.string.file_name), Context.MODE_PRIVATE);
+            PrintWriter printWriter = new PrintWriter(fos);
+            printWriter.print(noteList);
+            printWriter.close();
+            fos.close();
+            Log.d(TAG, "saveNote: JSON:\n" + noteList.toString());
+        }
+        catch (Exception e){
+            e.getStackTrace();
+        }
+    }
 
 
     private ArrayList<Note> loadFile(){
