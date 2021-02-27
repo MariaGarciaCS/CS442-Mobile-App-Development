@@ -3,4 +3,6 @@
     <string name="file_name">Note.json</string>
     <string name="info_btn">App Info</string>
     <string name="new_note_btn">New Note</string>
+    <string name="copyright">© 2021, Maria Garcia</string>
+    <string name="appVersion">Version 1.0</string>
 </resources>

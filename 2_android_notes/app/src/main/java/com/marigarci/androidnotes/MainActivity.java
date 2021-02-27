@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private static final int EDIT_NOTE_CODE = 1234;
+    private static final int NEW_NOTE_REQUEST = 1234;
     private final ArrayList<Note> noteList = new ArrayList<>();
 
     @Override
@@ -46,21 +46,23 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.infoBtn){
-            openAppInfo();
-            return true;
-        } else if (item.getItemId() == R.id.new_note_btn){
-            return true;
-        } else{
-            return super.onOptionsItemSelected(item);
+        switch (item.getItemId()){
+            case R.id.infoBtn:
+                Intent infoIntent = new Intent(this, AppInfo.class);
+                startActivity(infoIntent);
+                break;
+            case R.id.new_note_btn:
+                Note emptyNote = new Note();
+                Intent newNoteIntent = new Intent(this, EditNote.class);
+                newNoteIntent.putExtra("NEW_NOTE", emptyNote);
+                startActivityForResult(newNoteIntent, NEW_NOTE_REQUEST);
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     //Other Activities/////////////////////////////////////////
-    public void openAppInfo(){
-        Intent intent = new Intent(this, AppInfo.class);
-        startActivity(intent);
-    }
+
     public void openEditNote(View v){
         Intent intent = new Intent(this, EditNote.class);
 //        intent.putExtra("Title", title);
