@@ -11,4 +11,8 @@
 [Assignment Prompt](https://drive.google.com/file/d/1R8zeNzJJ7TcY0Ev9v2r-TIQ-oa1hFpNf/view?usp=sharing)
 
 **Points of Learning**
+1. Using a RecyclerView
+2. Passing information between activities
+3. Storing info in a JSON file
+4. Using an Options Menu
 
