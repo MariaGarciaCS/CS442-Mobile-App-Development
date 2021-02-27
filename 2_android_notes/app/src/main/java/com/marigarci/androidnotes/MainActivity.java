@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
     }
 
     //Options Menu/////////////////////////////////////////
@@ -134,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String title = jsonObject.getString("title");
                 String content = jsonObject.getString("content");
-                Note note = new Note(title, content);
+                String time = jsonObject.getString("time");
+                Note note = new Note(title, content, time);
                 noteList.add(note);
             }
         }
