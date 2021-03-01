@@ -16,3 +16,15 @@
 3. Storing info in a JSON file
 4. Using an Options Menu
 
+## Assignment 3: Stock Assistant
+[Assignment Prompt](https://drive.google.com/file/d/1cKlY_UhOqd4aLl-EGqE4UJrqNf6SYMKq/view?usp=sharing)
+
+**Points of Learning**
+1. Internet Use
+2. RecyclerView
+3. Option-Menus
+4. JSON Data
+5. Multi-threads
+6. Swipe-Refresh
+7. Dialogs
+8. SQLite Database
