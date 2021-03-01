@@ -41,23 +41,23 @@ public class Note implements Serializable {
     public String getLastEdit() { return lastEdit; }
 
     //JSON
-//    public String toString(){
-//        try{
-//            StringWriter sw = new StringWriter();
-//            JsonWriter jsonWriter = new JsonWriter(sw);
-//            jsonWriter.setIndent(" ");
-//            jsonWriter.beginObject();
-//            jsonWriter.name("title").value(getNoteTitle());
-//            jsonWriter.name("content").value(getNoteContent());
-//            jsonWriter.name("time").value(getLastEdit());
-//            jsonWriter.endObject();
-//            jsonWriter.close();
-//            return sw.toString();
-//        }
-//        catch (IOException e){
-//            e.printStackTrace();
-//        }
-//        return " ";
-//    }//end toString
+    public String toString(){
+        try{
+            StringWriter sw = new StringWriter();
+            JsonWriter jsonWriter = new JsonWriter(sw);
+            jsonWriter.setIndent(" ");
+            jsonWriter.beginObject();
+            jsonWriter.name("title").value(getNoteTitle());
+            jsonWriter.name("content").value(getNoteContent());
+            jsonWriter.name("time").value(getLastEdit());
+            jsonWriter.endObject();
+            jsonWriter.close();
+            return sw.toString();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        return " ";
+    }//end toString
 
 }//end class

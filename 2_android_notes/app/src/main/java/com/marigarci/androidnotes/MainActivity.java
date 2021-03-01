@@ -43,7 +43,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //JSON
-//        loadFile();
+        noteList.clear();
+        loadFile();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -55,6 +56,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     }
+
+    //JSON/////////////////////////////////////////
+    private void saveNoteJSON(){
+        Log.d(TAG, "saveNote: Saving JSON File");
+
+        try{
+            FileOutputStream fos = getApplicationContext().openFileOutput(getString(R.string.file_name), Context.MODE_PRIVATE);
+            PrintWriter printWriter = new PrintWriter(fos);
+            printWriter.print(noteList);
+            printWriter.close();
+            fos.close();
+            Log.d(TAG, "saveNote: JSON:\n" + noteList.toString());
+        }
+        catch (Exception e){
+            e.getStackTrace();
+        }
+    }
+
+//    @Override
+//    protected void onPause() {
+//        saveNoteJSON();
+//        super.onPause();
+//    }
+
+    private ArrayList<Note> loadFile(){
+        Log.d(TAG, "loadFile: Loading JSON File");
+        try {
+            InputStream is = getApplicationContext().openFileInput("Note.json");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null){
+                sb.append(line);
+            }
+
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            for (int i=0; i<jsonArray.length(); i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String title = jsonObject.getString("title");
+                String content = jsonObject.getString("content");
+                String time = jsonObject.getString("time");
+                Note note = new Note(title, content, time);
+                noteList.add(note);
+            }
+            jsonArray = new JSONArray(new ArrayList<String>());
+        }
+        catch (FileNotFoundException e){
+            Toast.makeText(this, "No JSON Note File Present", Toast.LENGTH_SHORT).show();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return noteList;
+    }
+
 
     //Options Menu/////////////////////////////////////////
     @Override
@@ -80,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-    //Other Activities/////////////////////////////////////////
+    //Navigating Activities/////////////////////////////////////////
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -91,15 +148,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     nRecieved = (Note) data.getSerializableExtra("EDIT_NOTE");
                     if (nRecieved != null) {
                         noteList.add(0, nRecieved);
+                        saveNoteJSON();
                         nAdapter.notifyDataSetChanged();
-                        setTitle(R.string.app_name + "(" + nAdapter.getItemCount() + ")" );
+                        setTitle("Android Notes" + "(" + nAdapter.getItemCount() + ")" );
                     }
                 }else {
                     Toast.makeText(this, "Empty note not saved", Toast.LENGTH_SHORT).show();
                 }
             }
         }
-
         else if (requestCode == EDIT_NOTE){
             if (resultCode == RESULT_OK) {
                 if (data != null) {
@@ -108,8 +165,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (nRecieved != null) {
                         noteList.remove(pos);
                         noteList.add(0, nRecieved);
+                        //TODO:SAVE EDITS
+//                        saveNoteJSON();
                         nAdapter.notifyDataSetChanged();
-                        setTitle(R.string.app_name+ "(" + nAdapter.getItemCount() + ")" );
+                        setTitle("Android Notes" + "(" + nAdapter.getItemCount() + ")" );
                     }
                 }else {
                     Toast.makeText(this, "Empty note not saved", Toast.LENGTH_SHORT).show();
@@ -120,74 +179,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Unexpected code received: " + requestCode, Toast.LENGTH_SHORT).show();
         }
     }
-
-    //JSON/////////////////////////////////////////
-
-//    @Override
-//    protected void onResume() {
-//        noteList.clear();
-//        noteList.addAll(loadFile());
-//        super.onResume();
-//
-//        int numNotes = noteList.size();
-//        for(int i=0; i<numNotes; i++){
-//            Note n = noteList.get(i);
-//        }
-//        nAdapter.notifyDataSetChanged();
-//    }
-
-//    private void saveNoteJSON(){
-//        Log.d(TAG, "saveNote: Saving JSON File");
-//
-//        try{
-//            FileOutputStream fos = getApplicationContext().openFileOutput(getString(R.string.file_name), Context.MODE_PRIVATE);
-//            PrintWriter printWriter = new PrintWriter(fos);
-//            printWriter.print(noteList);
-//            printWriter.close();
-//            fos.close();
-//            Log.d(TAG, "saveNote: JSON:\n" + noteList.toString());
-//        }
-//        catch (Exception e){
-//            e.getStackTrace();
-//        }
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        saveNoteJSON();
-//        super.onPause();
-//    }
-
-//    private ArrayList<Note> loadFile(){
-//        Log.d(TAG, "loadFile: Loading JSON File");
-//        try {
-//            InputStream is = getApplicationContext().openFileInput("Note.json");
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-//
-//            StringBuilder sb = new StringBuilder();
-//            String line;
-//            while ((line = reader.readLine()) != null){
-//                sb.append(line);
-//            }
-//
-//            JSONArray jsonArray = new JSONArray(sb.toString());
-//            for (int i=0; i<jsonArray.length(); i++){
-//                JSONObject jsonObject = jsonArray.getJSONObject(i);
-//                String title = jsonObject.getString("title");
-//                String content = jsonObject.getString("content");
-//                String time = jsonObject.getString("time");
-//                Note note = new Note(title, content, time);
-//                noteList.add(note);
-//            }
-//        }
-//        catch (FileNotFoundException e){
-//            Toast.makeText(this, "No JSON Note File Present", Toast.LENGTH_SHORT).show();
-//        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//        }
-//        return noteList;
-//    }
 
     // CLICKING THE NOTES
     @Override
@@ -221,11 +212,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void deleteNote(View v){
         int pos = recyclerView.getChildLayoutPosition(v);
         noteList.remove(pos);
+        saveNoteJSON();
         nAdapter.notifyDataSetChanged();
         if(nAdapter.getItemCount()==0){
-            setTitle(R.string.app_name);
+            setTitle("Android Notes");
         }else {
-            setTitle(R.string.app_name +"(" + nAdapter.getItemCount() + ")");
+            setTitle("Android Notes" + "(" + nAdapter.getItemCount() + ")");
         }
     }
 }
