@@ -97,7 +97,8 @@ public class EditNote extends AppCompatActivity {
         return currTitle.equals(currentTitle) && currContent.equals(currentContent);
     }
 
-    //TODO: If back button is pressed, ask to save
+
+    //Back button alert
     @Override
     public void onBackPressed() {
         String title = noteTitle.getText().toString();
