@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         noteList.clear();
         loadFile();
 
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(nAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        setTitle("Android Notes" + "(" + nAdapter.getItemCount() + ")" );
     }
 
     //JSON/////////////////////////////////////////
@@ -101,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Note note = new Note(title, content, time);
                 noteList.add(note);
             }
-            jsonArray = new JSONArray(new ArrayList<String>());
         }
         catch (FileNotFoundException e){
             Toast.makeText(this, "No JSON Note File Present", Toast.LENGTH_SHORT).show();
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         noteList.remove(pos);
                         noteList.add(0, nRecieved);
                         //TODO:SAVE EDITS
-//                        saveNoteJSON();
+                        saveNoteJSON();
                         nAdapter.notifyDataSetChanged();
                         setTitle("Android Notes" + "(" + nAdapter.getItemCount() + ")" );
                     }
