@@ -50,7 +50,7 @@ public class EditNote extends AppCompatActivity {
             }
         }
     }
-    
+
     //TODO: Options menu with save button
 
     //TODO: If back button is pressed, ask to save
