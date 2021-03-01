@@ -2,9 +2,13 @@ package com.marigarci.androidnotes;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,15 +29,31 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener{
     private static final String TAG = "MainActivity";
-    private static final int NEW_NOTE_REQUEST = 1234;
+    private static final int NEW_NOTE = 1;
+    private static final int EDIT_NOTE = 2;
     private final ArrayList<Note> noteList = new ArrayList<>();
+
+    RecyclerView recyclerView;
+    NoteAdapter nAdapter;
+
+    private Note nRecieved = new Note();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //JSON
+//        loadFile();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Recycler + Adapter
+        nAdapter = new NoteAdapter(noteList, this);
+        recyclerView = findViewById(R.id.noteRecycler);
+        recyclerView.setAdapter(nAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
     }
 
     //Options Menu/////////////////////////////////////////
@@ -54,96 +74,159 @@ public class MainActivity extends AppCompatActivity {
                 Note emptyNote = new Note();
                 Intent newNoteIntent = new Intent(this, EditNote.class);
                 newNoteIntent.putExtra("NEW_NOTE", emptyNote);
-                startActivityForResult(newNoteIntent, NEW_NOTE_REQUEST);
+                startActivityForResult(newNoteIntent, NEW_NOTE);
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
     //Other Activities/////////////////////////////////////////
-
-    public void openEditNote(View v){
-        Intent intent = new Intent(this, EditNote.class);
-//        intent.putExtra("Title", title);
-//        intent.putExtra("Content", content);
-//        startActivityForResult(intent, EDIT_NOTE_CODE);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Note note;
 
-//        if (requestCode == EDIT_NOTE_CODE){
-//            if (resultCode == NOTE_OK){
-//                if (data != null){
-//                    note = (Note) data.getSerializableExtra("Title");
-//                }
-//            }
-//        }
+        if (requestCode == NEW_NOTE){
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
+                    nRecieved = (Note) data.getSerializableExtra("EDIT_NOTE");
+                    if (nRecieved != null) {
+                        noteList.add(0, nRecieved);
+                        nAdapter.notifyDataSetChanged();
+                        setTitle(R.string.app_name + "(" + nAdapter.getItemCount() + ")" );
+                    }
+                }else {
+                    Toast.makeText(this, "Empty note not saved", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        else if (requestCode == EDIT_NOTE){
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
+                    nRecieved = (Note) data.getSerializableExtra("EDIT_NOTE");
+                    int pos = data.getIntExtra("POS", 0);
+                    if (nRecieved != null) {
+                        noteList.remove(pos);
+                        noteList.add(0, nRecieved);
+                        nAdapter.notifyDataSetChanged();
+                        setTitle(R.string.app_name+ "(" + nAdapter.getItemCount() + ")" );
+                    }
+                }else {
+                    Toast.makeText(this, "Empty note not saved", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+        else {
+            Toast.makeText(this, "Unexpected code received: " + requestCode, Toast.LENGTH_SHORT).show();
+        }
     }
 
     //JSON/////////////////////////////////////////
 
+//    @Override
+//    protected void onResume() {
+//        noteList.clear();
+//        noteList.addAll(loadFile());
+//        super.onResume();
+//
+//        int numNotes = noteList.size();
+//        for(int i=0; i<numNotes; i++){
+//            Note n = noteList.get(i);
+//        }
+//        nAdapter.notifyDataSetChanged();
+//    }
+
+//    private void saveNoteJSON(){
+//        Log.d(TAG, "saveNote: Saving JSON File");
+//
+//        try{
+//            FileOutputStream fos = getApplicationContext().openFileOutput(getString(R.string.file_name), Context.MODE_PRIVATE);
+//            PrintWriter printWriter = new PrintWriter(fos);
+//            printWriter.print(noteList);
+//            printWriter.close();
+//            fos.close();
+//            Log.d(TAG, "saveNote: JSON:\n" + noteList.toString());
+//        }
+//        catch (Exception e){
+//            e.getStackTrace();
+//        }
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        saveNoteJSON();
+//        super.onPause();
+//    }
+
+//    private ArrayList<Note> loadFile(){
+//        Log.d(TAG, "loadFile: Loading JSON File");
+//        try {
+//            InputStream is = getApplicationContext().openFileInput("Note.json");
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+//
+//            StringBuilder sb = new StringBuilder();
+//            String line;
+//            while ((line = reader.readLine()) != null){
+//                sb.append(line);
+//            }
+//
+//            JSONArray jsonArray = new JSONArray(sb.toString());
+//            for (int i=0; i<jsonArray.length(); i++){
+//                JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                String title = jsonObject.getString("title");
+//                String content = jsonObject.getString("content");
+//                String time = jsonObject.getString("time");
+//                Note note = new Note(title, content, time);
+//                noteList.add(note);
+//            }
+//        }
+//        catch (FileNotFoundException e){
+//            Toast.makeText(this, "No JSON Note File Present", Toast.LENGTH_SHORT).show();
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        return noteList;
+//    }
+
+    // CLICKING THE NOTES
     @Override
-    protected void onResume() {
-        noteList.clear();
-        noteList.addAll(loadFile());
-        super.onResume();
-
-        int numNotes = noteList.size();
-        for(int i=0; i<numNotes; i++){
-            Note n = noteList.get(i);
-//            title.setText(n.getNoteTitle());
-//            content.setText(n.getNoteContent());
-        }
+    public void onClick(View v) {
+        int pos = recyclerView.getChildLayoutPosition(v);
+        Log.d(TAG, "SENT POS:" + pos);
+        Note selectedNote = noteList.get(pos);
+        Intent editNoteIntent = new Intent(this, EditNote.class);
+        editNoteIntent.putExtra("EDIT_NOTE", selectedNote);
+        editNoteIntent.putExtra("POS", pos);
+        nAdapter.notifyDataSetChanged();
+        startActivityForResult(editNoteIntent, EDIT_NOTE);
     }
 
-    private void saveNote(){
-        Log.d(TAG, "saveNote: Saving JSON File");
-
-        try{
-            FileOutputStream fos = getApplicationContext().openFileOutput(getString(R.string.file_name), Context.MODE_PRIVATE);
-            PrintWriter printWriter = new PrintWriter(fos);
-            printWriter.print(noteList);
-            printWriter.close();
-            fos.close();
-            Log.d(TAG, "saveNote: JSON:\n" + noteList.toString());
-        }
-        catch (Exception e){
-            e.getStackTrace();
-        }
+    @Override
+    public boolean onLongClick(final View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                deleteNote(v);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.setMessage("Do you want to permanently delete this note?");
+        builder.setTitle("Delete Note?");
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        return true;
     }
 
-
-    private ArrayList<Note> loadFile(){
-        Log.d(TAG, "loadFile: Loading JSON File");
-        try {
-            InputStream is = getApplicationContext().openFileInput("Note.json");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null){
-                sb.append(line);
-            }
-
-            JSONArray jsonArray = new JSONArray(sb.toString());
-            for (int i=0; i<jsonArray.length(); i++){
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                String title = jsonObject.getString("title");
-                String content = jsonObject.getString("content");
-                String time = jsonObject.getString("time");
-                Note note = new Note(title, content, time);
-                noteList.add(note);
-            }
+    public void deleteNote(View v){
+        int pos = recyclerView.getChildLayoutPosition(v);
+        noteList.remove(pos);
+        nAdapter.notifyDataSetChanged();
+        if(nAdapter.getItemCount()==0){
+            setTitle(R.string.app_name);
+        }else {
+            setTitle(R.string.app_name +"(" + nAdapter.getItemCount() + ")");
         }
-        catch (FileNotFoundException e){
-            Toast.makeText(this, "No JSON Note File Present", Toast.LENGTH_SHORT).show();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        return noteList;
     }
 }
+
