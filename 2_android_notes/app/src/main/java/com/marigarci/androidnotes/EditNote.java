@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +32,7 @@ public class EditNote extends AppCompatActivity {
 
         noteTitle = findViewById(R.id.editTitle);
         noteContent = findViewById(R.id.editContent);
+        noteContent.setMovementMethod(new ScrollingMovementMethod());
 
         Intent intent = getIntent();
 
@@ -79,8 +81,25 @@ public class EditNote extends AppCompatActivity {
 
         if (unchanged(title, content)){finish();}
 
-        if (title.trim().isEmpty()) {
-            Toast.makeText(this, "No title, note not saved", Toast.LENGTH_LONG).show();
+        else if (title.matches("")) {
+            final AlertDialog.Builder noTitle = new AlertDialog.Builder(this);
+            noTitle.setMessage("A note without a title will not be saved");
+            noTitle.setTitle("Empty Title");
+
+            noTitle.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    finish();
+                }
+            });
+            noTitle.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            AlertDialog dialog = noTitle.create();
+            dialog.show();
+
         } else if (!content.trim().isEmpty()) {
             currNote.setAll(title, content, new Date());
 
@@ -88,8 +107,9 @@ public class EditNote extends AppCompatActivity {
             intent.putExtra("EDIT_NOTE", currNote);
             intent.putExtra("POS", pos);
             setResult(RESULT_OK, intent);
+            finish();
         }
-        finish();
+
     }
 
     //True is note is unchanged, false is note is modified
@@ -125,5 +145,10 @@ public class EditNote extends AppCompatActivity {
         }else {
             finish();
         }
+    }
+
+    //Can't save without title
+    public void noTitle() {
+
     }
 }
