@@ -1,8 +1,10 @@
 package com.marigarci.androidnotes;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -95,7 +97,32 @@ public class EditNote extends AppCompatActivity {
         return currTitle.equals(currentTitle) && currContent.equals(currentContent);
     }
 
-
-
     //TODO: If back button is pressed, ask to save
+    @Override
+    public void onBackPressed() {
+        String title = noteTitle.getText().toString();
+        String content = noteContent.getText().toString();
+
+        if (!unchanged(title, content)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Do you want to save '"+ title + "'?");
+            builder.setTitle("Save Note?");
+            builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    onSaveNote();
+                }
+            });
+            builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }else {
+            finish();
+        }
+    }
 }
