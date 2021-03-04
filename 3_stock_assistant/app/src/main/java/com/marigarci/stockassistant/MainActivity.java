@@ -1,6 +1,7 @@
 package com.marigarci.stockassistant;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,7 +59,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.addStockBtn){
             //TODO: Alert Dialog to add stock, only capital letters
-            Toast.makeText(this, "Add Stock pressed", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Add Stock pressed", Toast.LENGTH_SHORT).show();
+//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//            builder.setMessage("Please enter a Stock Symbol:");
+//            builder.setTitle("Stock Selection");
         }
         return super.onOptionsItemSelected(item);
     }
