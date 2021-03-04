@@ -6,27 +6,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener{
     private static final String TAG = "MainActivity";
     private final ArrayList<Stock> stockList = new ArrayList<>();
 
     RecyclerView recyclerView;
     StockAdapter sAdapter;
-
-    Stock sample1 = new Stock();
-
-
-
-
-
-
 
 
     @Override
@@ -34,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //TODO:REMOVE
+        Stock sample1 = new Stock();
         sample1.setAll("AAPL", "Apple Inc.", 135.72, 0.38, 0.28);
         stockList.add(sample1);
         Stock sample2 = new Stock("AMZN", "Amazon.com Inc.", 845.07, 0.93, 0.11);
@@ -65,5 +61,32 @@ public class MainActivity extends AppCompatActivity {
 //            builder.setTitle("Stock Selection");
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    //Clicking Stocks---------------------------
+    @Override
+    public void onClick(View v) {//open web browser
+        Toast.makeText(this, "LongClick", Toast.LENGTH_SHORT).show();
+        //TODO: Open web browser onclick
+    }
+
+    @Override
+    public boolean onLongClick(final View v) {//Delete stock with delete confirmation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                int pos = recyclerView.getChildLayoutPosition(v);
+                stockList.remove(pos);
+                //TODO:Save stock to db
+//                saveNoteJSON();
+                sAdapter.notifyDataSetChanged();
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.setMessage("Do you want to permanently delete this note?");
+        builder.setTitle("Delete Note?");
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        return true;
     }
 }
