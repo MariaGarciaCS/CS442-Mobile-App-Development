@@ -1,13 +1,20 @@
 package com.marigarci.stockassistant;
 
 public class Stock {
-    private String symbol; //stock symbol
-    private String company; //companyName
-    private double price;
-    private double pChange; //price change
-    private double percent; //change percent
+    String symbol; //stock symbol
+    String company; //companyName
+    double price;
+    double pChange; //price change
+    double percent; //change percent
 
     //Constructors
+    public Stock(){
+        this.symbol = null;
+        this.company = null;
+        this.price = 0;
+        this.pChange = 0;
+        this.percent = 0;
+    }
     public Stock(String symbol, String company, double price, double priceChange, double percentChange){
         this.symbol = symbol;
         this.company = company;
@@ -48,5 +55,12 @@ public class Stock {
     }
     public void setPercent(double percent) {
         this.percent = percent;
+    }
+    public void setAll(String symbol, String company, double price, double priceChange, double percentChange){
+        this.symbol = symbol;
+        this.company = company;
+        this.price = price;
+        this.pChange = priceChange;
+        this.percent = percentChange;
     }
 }

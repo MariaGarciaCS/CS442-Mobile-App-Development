@@ -2,18 +2,43 @@ package com.marigarci.stockassistant;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+    private final ArrayList<Stock> stockList = new ArrayList<>();
+
+    RecyclerView recyclerView;
+    StockAdapter sAdapter;
+
+//    Stock sample1 = new Stock();
+//    sample1.setAll("AAPL", "Apple Inc.", 135.72, 0.38, 0.28));
+//    stockList.add(sample1);
+
+ //   private Stock sample2 = new Stock("AMZN", "Amazon.com Inc.", 845.07, 0.93, 0.11);
+//    private Stock sample3 = new Stock("GOOG", "Alphabet Inc.", 828.07, 3.91, 0.47);
+
+ //   stockList.add(sample2);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Recycler + Adapter
+        sAdapter = new StockAdapter(stockList, this);
+        recyclerView = findViewById(R.id.stockRecycler);
+        recyclerView.setAdapter(sAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     //Options Menu---------------------------
