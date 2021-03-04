@@ -41,14 +41,11 @@ public class StockAdapter extends RecyclerView.Adapter<StockViewHolder> {
     public void onBindViewHolder(@NonNull StockViewHolder holder, int position) {
         Stock s = stockList.get(position);
 
-        //TODO: Edit to fit stock_entry
         holder.symbol.setText((s.getSymbol()));
         holder.company.setText(s.getCompany());
-
-        //TODO: Format doubles
-        holder.price.setText("0.00");
-        holder.priceChange.setText("0.00");
-        holder.percentChange.setText("0.00");
+        holder.price.setText(s.getPriceStr());
+        holder.priceChange.setText(s.getpChangeStr());
+        holder.percentChange.setText(s.getPercentStr());
     }
 
     @Override

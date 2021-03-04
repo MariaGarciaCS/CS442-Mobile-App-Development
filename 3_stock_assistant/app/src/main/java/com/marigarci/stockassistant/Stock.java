@@ -1,11 +1,15 @@
 package com.marigarci.stockassistant;
 
+import java.text.DecimalFormat;
+
 public class Stock {
     String symbol; //stock symbol
     String company; //companyName
     double price;
     double pChange; //price change
     double percent; //change percent
+
+    private static DecimalFormat df2 = new DecimalFormat("#.00");
 
     //Constructors
     public Stock(){
@@ -33,11 +37,18 @@ public class Stock {
     public double getPrice() {
         return price;
     }
+    public String getPriceStr(){return df2.format(price);}
     public double getpChange() {
         return pChange;
     }
+    public String getpChangeStr() {
+        return df2.format(pChange);
+    }
     public double getPercent() {
         return percent;
+    }
+    public String getPercentStr() {
+        return df2.format((percent));
     }
 
     //set methods
