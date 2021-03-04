@@ -9,7 +9,7 @@ public class Stock {
     double pChange; //price change
     double percent; //change percent
 
-    private static DecimalFormat df2 = new DecimalFormat("#.00");
+    private static DecimalFormat df2 = new DecimalFormat("0.00");
 
     //Constructors
     public Stock(){

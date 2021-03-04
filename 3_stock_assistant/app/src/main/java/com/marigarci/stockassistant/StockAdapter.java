@@ -45,7 +45,7 @@ public class StockAdapter extends RecyclerView.Adapter<StockViewHolder> {
         holder.company.setText(s.getCompany());
         holder.price.setText(s.getPriceStr());
         holder.priceChange.setText(s.getpChangeStr());
-        holder.percentChange.setText(s.getPercentStr());
+        holder.percentChange.setText("(" + s.getPercentStr() + "%)");
     }
 
     @Override

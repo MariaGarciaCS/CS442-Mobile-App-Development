@@ -19,20 +19,27 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     StockAdapter sAdapter;
 
-//    Stock sample1 = new Stock();
-//    sample1.setAll("AAPL", "Apple Inc.", 135.72, 0.38, 0.28));
-//    stockList.add(sample1);
+    Stock sample1 = new Stock();
 
- //   private Stock sample2 = new Stock("AMZN", "Amazon.com Inc.", 845.07, 0.93, 0.11);
-//    private Stock sample3 = new Stock("GOOG", "Alphabet Inc.", 828.07, 3.91, 0.47);
 
- //   stockList.add(sample2);
+
+
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sample1.setAll("AAPL", "Apple Inc.", 135.72, 0.38, 0.28);
+        stockList.add(sample1);
+        Stock sample2 = new Stock("AMZN", "Amazon.com Inc.", 845.07, 0.93, 0.11);
+        stockList.add(sample2);
+        Stock sample3 = new Stock("GOOG", "Alphabet Inc.", 828.07, 3.91, 0.47);
+        stockList.add(sample3);
+
 
         //Recycler + Adapter
         sAdapter = new StockAdapter(stockList, this);
