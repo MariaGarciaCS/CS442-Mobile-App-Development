@@ -26,6 +26,10 @@ public class Stock {
         this.pChange = priceChange;
         this.percent = percentChange;
     }
+    public Stock(String symbol, String company){
+        this.symbol = symbol;
+        this.company = company;
+    }
 
     //get methods
     public String getSymbol() {

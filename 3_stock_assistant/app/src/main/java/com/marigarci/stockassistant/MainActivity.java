@@ -14,10 +14,13 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener{
     private static final String TAG = "MainActivity";
-    private final ArrayList<Stock> stockList = new ArrayList<>();
+    private  ArrayList<Stock> stockList = new ArrayList<>();
+    private  ArrayList<Stock> tmpStockList = new ArrayList<>();
+    private HashMap<String, String> stockSymbols = new HashMap<String, String>();
 
     RecyclerView recyclerView;
     StockAdapter sAdapter;
@@ -55,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.addStockBtn){
             //TODO: Alert Dialog to add stock, only capital letters
-//            Toast.makeText(this, "Add Stock pressed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Add Stock pressed", Toast.LENGTH_SHORT).show();
 //            AlertDialog.Builder builder = new AlertDialog.Builder(this);
 //            builder.setMessage("Please enter a Stock Symbol:");
 //            builder.setTitle("Stock Selection");
@@ -66,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //Clicking Stocks---------------------------
     @Override
     public void onClick(View v) {//open web browser
-        Toast.makeText(this, "LongClick", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Click", Toast.LENGTH_SHORT).show();
         //TODO: Open web browser onclick
     }
 
@@ -88,5 +91,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog dialog = builder.create();
         dialog.show();
         return true;
+    }
+
+    //Loaders---------------------------
+    public void updateData(HashMap<String,String> sList) {
+        stockSymbols.putAll(sList);
+        sAdapter.notifyDataSetChanged();
+    }
+
+    public void downloadFailed() {
+        stockList.clear();
+        sAdapter.notifyDataSetChanged();
     }
 }
