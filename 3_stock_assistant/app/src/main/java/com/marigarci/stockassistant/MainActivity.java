@@ -94,6 +94,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //Loaders---------------------------
+    public void addStock(){
+        //Connected to network?
+
+    }
+    public void loadStock(){
+        stockList.clear();
+        for (int i = 0; i < tmpStockList.size(); i++){
+
+        }
+        sAdapter.notifyDataSetChanged();
+    }
+    public void updateStock(Stock newStock){
+        stockList.add(newStock);
+    }
     public void updateData(HashMap<String,String> sList) {
         stockSymbols.putAll(sList);
         sAdapter.notifyDataSetChanged();

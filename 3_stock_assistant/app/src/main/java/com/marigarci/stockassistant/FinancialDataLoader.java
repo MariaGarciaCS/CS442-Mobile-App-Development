@@ -17,8 +17,5 @@ public class FinancialDataLoader implements Runnable{
         Uri dataUri = Uri.parse(QUERY);
         String urlToUse = dataUri.toString();
         Log.d(TAG, "run: " + urlToUse);
-
-
-
     }
 }
