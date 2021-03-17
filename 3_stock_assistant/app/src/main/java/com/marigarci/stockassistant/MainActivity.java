@@ -123,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void addStock(){
         //Connected to network?
 
+//        addStock();
+
     }
     public void loadStock(){
         stockList.clear();
