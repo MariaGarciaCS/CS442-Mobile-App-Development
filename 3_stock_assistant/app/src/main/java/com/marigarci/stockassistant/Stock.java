@@ -1,8 +1,9 @@
 package com.marigarci.stockassistant;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 
-public class Stock {
+public class Stock implements Serializable {
     String symbol; //stock symbol
     String company; //companyName
     double price;

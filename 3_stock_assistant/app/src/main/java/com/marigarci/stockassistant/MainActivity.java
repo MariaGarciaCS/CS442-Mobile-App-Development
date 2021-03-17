@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private  ArrayList<Stock> tmpStockList = new ArrayList<>();
     private HashMap<String, String> stockSymbols = new HashMap<String, String>();
 
+    DatabaseHandler databaseHandler;
     RecyclerView recyclerView;
     StockAdapter sAdapter;
 
@@ -46,6 +48,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView = findViewById(R.id.stockRecycler);
         recyclerView.setAdapter(sAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        //Database
+        databaseHandler = new DatabaseHandler(this);
+
+    }
+
+    @Override
+    protected void onResume() {
+        databaseHandler.dumpDbToLog();
+        ArrayList<Stock> list = databaseHandler.loadStock();
+
+        stockList.clear();
+        stockList.addAll(list);
+        Log.d(TAG, "onResume: " + list);
+        sAdapter.notifyDataSetChanged();
+
+        super.onResume();
+    }
+
+    //Called on backarrow or when idle for a bit, closes connections
+    @Override
+    protected void onDestroy() {
+        databaseHandler.shutDown();
+        super.onDestroy();
     }
 
     //Options Menu---------------------------
@@ -75,19 +101,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onLongClick(final View v) {//Delete stock with delete confirmation
+        int pos = recyclerView.getChildLayoutPosition(v);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                int pos = recyclerView.getChildLayoutPosition(v);
+                databaseHandler.deleteStock(stockList.get(pos).getSymbol());
                 stockList.remove(pos);
-                //TODO:Save stock to db
-//                saveNoteJSON();
                 sAdapter.notifyDataSetChanged();
             }
         });
         builder.setNegativeButton("Cancel", null);
-        builder.setMessage("Do you want to permanently delete this note?");
-        builder.setTitle("Delete Note?");
+        builder.setMessage("Remove this stock?");
+        builder.setTitle("Remove Stock?");
         AlertDialog dialog = builder.create();
         dialog.show();
         return true;
