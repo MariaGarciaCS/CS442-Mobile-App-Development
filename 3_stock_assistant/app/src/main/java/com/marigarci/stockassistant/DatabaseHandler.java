@@ -28,7 +28,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String SQL_CREATE_TABLE = 
             "CREATE TABLE " + TABLE_NAME + " (" +
                     SYMBOL + "TEXT not null unique," +
-                    COMPANY + " TEXT not null unique)";
+                    COMPANY + " TEXT not null)";
 
     DatabaseHandler(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -101,22 +101,16 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public void addStock(Stock stock){
         ContentValues values = new ContentValues();
-
         values.put(SYMBOL, stock.getSymbol());
         values.put(COMPANY, stock.getCompany());
-
         long key = database.insert(TABLE_NAME, null, values);
         Log.d(TAG, "addStock: " + key);
     }
 
     public void deleteStock(String symbol){
         Log.d(TAG, "deleteStock: " + symbol);
-
         int cnt = database.delete(TABLE_NAME, SYMBOL + " = ?",
-                new String[]{
-                        String.format(Locale.getDefault(), "%s", symbol)
-                });
-
+                new String[]{symbol});
         Log.d(TAG, "deleteStock: " + cnt);
     }
 }
