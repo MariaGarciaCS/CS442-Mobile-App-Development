@@ -3,7 +3,7 @@ package com.marigarci.stockassistant;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 
-public class Stock implements Serializable {
+public class Stock implements Comparable<Stock> {
     String symbol; //stock symbol
     String company; //companyName
     double price;
@@ -78,5 +78,10 @@ public class Stock implements Serializable {
         this.price = price;
         this.pChange = priceChange;
         this.percent = percentChange;
+    }
+
+    @Override
+    public int compareTo(Stock s){
+        return this.getSymbol().compareTo( s.getSymbol() );
     }
 }

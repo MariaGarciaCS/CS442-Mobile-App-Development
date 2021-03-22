@@ -89,12 +89,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             databaseHandler = new DatabaseHandler(this);
             ArrayList<Stock> temp = databaseHandler.loadStocks();
             stockList.clear();
-            //TODO:Run FinancialDataLoader, add stocks with data
-            //TODO: Sort Stocks
+
+
+            for(int i = 0; i < temp.size(); i++){
+                String symbol = temp.get(i).getSymbol();
+                FinancialDataLoader fd = new FinancialDataLoader(this, symbol);
+                new Thread(fd).start();
+            }
+
+            Collections.sort(stockList);
             sAdapter.notifyDataSetChanged();
         }
         else{
-            //TODO: Eror connection
+            //TODO: Error connection
         }
         super.onResume();
     }
@@ -271,6 +278,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stockSymbols.putAll(sList);
         Log.d(TAG, "updateData: NUMSYMBOLS " + stockSymbols.size());
         sAdapter.notifyDataSetChanged();
+    }
+
+    public void updateFinancialData(Stock s){
+        stockList.add(s);
     }
 
     public void downloadFailed(){
