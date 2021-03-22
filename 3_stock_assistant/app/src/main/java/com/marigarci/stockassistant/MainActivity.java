@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sAdapter.notifyDataSetChanged();
         }
         else{
-            //TODO: Error connection
+            netError();
         }
         super.onResume();
     }
@@ -197,27 +197,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
-    private void showAddDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final EditText et = new EditText(this);
-        et.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        et.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
-        et.setGravity(Gravity.CENTER_HORIZONTAL);
-        builder.setView(et);
-
-        builder.setTitle("Add Stock");
-        builder.setMessage("Enter Stock Symbol:");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String myStock = et.getText().toString().trim().toUpperCase();
-                if (!myStock.isEmpty()) findStock(myStock);
-            }
-        });
-        builder.setNegativeButton("Cancel", null);
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 
     private void findStock(String symbol) {
         HashMap<String, String> found = new HashMap<String, String>();
@@ -260,6 +239,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             dialog1.show();
         }
 
+    }
+
+    //Dialogs---------------------------
+
+    private void showAddDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final EditText et = new EditText(this);
+        et.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+        et.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        et.setGravity(Gravity.CENTER_HORIZONTAL);
+        builder.setView(et);
+
+        builder.setTitle("Add Stock");
+        builder.setMessage("Enter Stock Symbol:");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String myStock = et.getText().toString().trim().toUpperCase();
+                if (!myStock.isEmpty()) findStock(myStock);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void netError(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("A Network Connection is Needed to Add Stocks");
+        builder.setTitle("No Network Connection");
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     //Loaders---------------------------
