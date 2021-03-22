@@ -56,11 +56,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(sAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        //NEW
+        //Database
         databaseHandler = new DatabaseHandler(this);
 
         //Download Stock Symbols and Names
-        updateData(stockSymbols);
+        SymbolLoader symbLoader = new SymbolLoader(this);
+        new Thread(symbLoader).start();
 
 
 
@@ -264,9 +265,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void updateStock(Stock newStock){
         stockList.add(newStock);
     }
+
     public void updateData(HashMap<String,String> sList) {
-        sList.clear();
+        stockSymbols.clear();
         stockSymbols.putAll(sList);
+        Log.d(TAG, "updateData: NUMSYMBOLS " + stockSymbols.size());
         sAdapter.notifyDataSetChanged();
     }
 
