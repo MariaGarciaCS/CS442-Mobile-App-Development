@@ -29,11 +29,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import static android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener{
     private static final String TAG = "MainActivity";
     private static final String url = "https://www.marketwatch.com/investing/stock/";
     private  ArrayList<Stock> stockList = new ArrayList<>();
     private HashMap<String, String> stockSymbols = new HashMap<String, String>();
+    public MainActivity ma = this;
 
 
     private RecyclerView recyclerView;
@@ -126,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (stockSymbols.isEmpty()){
                     //TODO: ADD Symb
                 }
-                showAddDialog();
+                addStockDialog();
             }
             else{
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -205,61 +208,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 found.put(symb, stockSymbols.get(symb));
             }
         }
+//        int count = Collections.frequency(new ArrayList<String>(stockSymbols.values()), symbol);
 
-        //One stock found
-        if (found.size() == 1){
-            addStock(symbol);
-        }
-        //Many stocks found
-        else if (found.size() > 1){
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            ArrayList<String> array = new ArrayList<String>();
-            for (String k : found.keySet()) {
-                array.add(k + " - " + found.get(k));
-            }
-            builder.setTitle("Make a selection");
-            final CharSequence[] sArray = array.toArray(new CharSequence[0]);
-            builder.setItems(sArray, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    addStock(sArray[which].toString());
-
-                }
-            });
-
-            builder.setNegativeButton("Nevermind", null);
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        }
-        //No stocks found
-        else{
-            AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
-            builder1.setTitle("Symbol Not Found: " + symbol);
-            builder1.setMessage("Data for stock symbol");
-            AlertDialog dialog1 = builder1.create();
-            dialog1.show();
-        }
+//        //One stock found
+//        if (count == 1){
+//            //TODO
+//            addStock(symbol);
+//        }
+//        //Many stocks found
+//        else if (count > 1){
+////            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+////            ArrayList<String> array = new ArrayList<String>();
+////            for (String k : found.keySet()) {
+////                array.add(k + " - " + found.get(k));
+////            }
+////            builder.setTitle("Choose a stock");
+////            final CharSequence[] sArray = array.toArray(new CharSequence[0]);
+////            builder.setItems(sArray, new DialogInterface.OnClickListener() {
+////                public void onClick(DialogInterface dialog, int which) {
+////                    addStock(sArray[which].toString());
+////
+////                }
+////            });
+////
+////            builder.setNegativeButton("Nevermind", null);
+////            AlertDialog dialog = builder.create();
+////            dialog.show();
+//        }
+//        //No stocks found
+//        else{
+//            AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+//            builder1.setTitle("Symbol Not Found: " + symbol);
+//            AlertDialog dialog1 = builder1.create();
+//            dialog1.show();
+//        }
 
     }
 
     //Dialogs---------------------------
 
-    private void showAddDialog() {
+    public void addStockDialog(){
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final EditText et = new EditText(this);
-        et.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        et.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        et.setInputType(InputType.TYPE_CLASS_TEXT | TYPE_TEXT_FLAG_CAP_CHARACTERS );
         et.setGravity(Gravity.CENTER_HORIZONTAL);
         builder.setView(et);
 
-        builder.setTitle("Add Stock");
-        builder.setMessage("Enter Stock Symbol:");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String myStock = et.getText().toString().trim().toUpperCase();
-                if (!myStock.isEmpty()) findStock(myStock);
+        builder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String s = et.getText().toString();
+                boolean exists = false;
+
+                for(int j = 0; j < stockList.size() ;j++){
+                    String symbol = stockList.get(j).getSymbol();
+                    if(symbol.equals(s)){exists = true;}
+                }
+                if(exists){
+                    ma.multipleStocksDialog(s);
+                }
+                else {
+                    FinancialDataLoader fd2 = new FinancialDataLoader(ma, s);
+                    new Thread(fd2).start();
+                    sAdapter.notifyDataSetChanged();
+
+                }
             }
         });
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //do nothing
+            }
+        });
+        builder.setMessage("Enter a Stock");
+        builder.setTitle("New Stock");
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -269,6 +293,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("A Network Connection is Needed to Add Stocks");
         builder.setTitle("No Network Connection");
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void multipleStocksDialog(String symb){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Stock Symbol " + symb + " already exists");
+        builder.setTitle("Existing Stock");
+
         AlertDialog dialog = builder.create();
         dialog.show();
     }

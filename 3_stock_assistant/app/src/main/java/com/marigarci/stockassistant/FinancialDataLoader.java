@@ -17,16 +17,20 @@ public class FinancialDataLoader implements Runnable{
     private final MainActivity mainActivity;
     private String API_KEY = "pk_f9ebb691d13c4e809c93bbf8b894d415";
     private String STOCK_SYMBOL;
-    private String QUERY = "https://cloud.iexapis.com/stable/stock/" + STOCK_SYMBOL + "/quote?token=" + API_KEY;
+    private String QUERY = "https://cloud.iexapis.com/stable/stock/";
 
-    FinancialDataLoader(MainActivity mainActivity, String symbol){this.mainActivity = mainActivity; this.STOCK_SYMBOL = symbol;}
+    FinancialDataLoader(MainActivity mainActivity, String symbol){
+        this.mainActivity = mainActivity;
+        this.STOCK_SYMBOL = symbol;}
 
     @Override
     public void run() {
         Stock newStock = parseStock(getFD());
+        mainActivity.updateFinancialData(newStock);
     }
 
     private String getFD(){
+        String QUERY = "https://cloud.iexapis.com/stable/stock/" + STOCK_SYMBOL + "/quote?token=" + API_KEY;
         Uri dataUri = Uri.parse(QUERY);
         String urlToUse = dataUri.toString();
         Log.d(TAG, "run: " + urlToUse);
@@ -62,6 +66,7 @@ public class FinancialDataLoader implements Runnable{
             double change = Double.parseDouble(jsonObject.getString("change"));
             double percent = Double.parseDouble(jsonObject.getString("changePercent"));
             Stock stock = new Stock(symbol, company, price, change, percent);
+            Log.d(TAG, "parseStock: " + company);
             return stock;
         }
         catch (Exception e){

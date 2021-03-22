@@ -1,5 +1,6 @@
 package com.marigarci.stockassistant;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +37,7 @@ public class StockAdapter extends RecyclerView.Adapter<StockViewHolder> {
         return  new StockViewHolder(itemView);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull StockViewHolder holder, int position) {
         Stock s = stockList.get(position);
