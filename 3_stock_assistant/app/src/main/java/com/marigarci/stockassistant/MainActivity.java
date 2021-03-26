@@ -66,38 +66,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SymbolLoader symbLoader = new SymbolLoader(this);
         new Thread(symbLoader).start();
 
+        //TODO Swipe refresh layout
+    }
 
+    //TODO: OnRefresh
+    public void onRefresh(){
+        if (connected()){
+            //Get stocks from DB
+            ArrayList<Stock> temp = databaseHandler.loadStocks();
+            stockList.clear();
 
+            for(int i = 0; i < temp.size(); i++){
+                String symbol = temp.get(i).getSymbol();
+                new FinancialDataLoader(ma).execute(symbol);
+            }
 
-//        if (connected()){
-//            //TODO add stocks in temp list to stocklist
-//        }
-//        else{
-//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//            builder.setTitle("No Network Connection");
-//            builder.setMessage("Need A Network Connection To Display Stocks.");
-//            AlertDialog dialog = builder.create();
-//            dialog.show();
-//
-//            //TODO: Display stocks with values set to zero
-//            //TODO: Sort STocks
-//
-//        }
+            Collections.sort(stockList);
+            sAdapter.notifyDataSetChanged();
+        }
+        else{
+            netError();
+            //TODO: Swipe refresh
+        }
     }
 
     @Override
     protected void onResume() {
         if (connected()){
             //Get stocks from DB
-            databaseHandler = new DatabaseHandler(this);
             ArrayList<Stock> temp = databaseHandler.loadStocks();
             stockList.clear();
 
-
             for(int i = 0; i < temp.size(); i++){
                 String symbol = temp.get(i).getSymbol();
-//                FinancialDataLoader fd = new FinancialDataLoader(this, symbol);
-//                new Thread(fd).start();
                 new FinancialDataLoader(ma).execute(symbol);
             }
 
