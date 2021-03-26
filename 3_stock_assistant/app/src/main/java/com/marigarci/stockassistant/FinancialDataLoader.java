@@ -1,6 +1,7 @@
 package com.marigarci.stockassistant;
 
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -12,25 +13,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class FinancialDataLoader implements Runnable{
+public class FinancialDataLoader extends AsyncTask<String, Integer, String> {
     private static final String TAG = "FinancialDataLoader";
     private final MainActivity mainActivity;
-    private String API_KEY = "pk_f9ebb691d13c4e809c93bbf8b894d415";
-    private String STOCK_SYMBOL;
-    private String QUERY = "https://cloud.iexapis.com/stable/stock/";
 
-    FinancialDataLoader(MainActivity mainActivity, String symbol){
-        this.mainActivity = mainActivity;
-        this.STOCK_SYMBOL = symbol;}
+    private String API_KEY = "pk_f9ebb691d13c4e809c93bbf8b894d415";
+    private String urlTemplate = "https://cloud.iexapis.com/stable/stock/";
+
+    FinancialDataLoader(MainActivity mainActivity){
+        this.mainActivity = mainActivity; }
 
     @Override
-    public void run() {
-        Stock newStock = parseStock(getFD());
-        mainActivity.updateFinancialData(newStock);
-    }
-
-    private String getFD(){
-        String QUERY = "https://cloud.iexapis.com/stable/stock/" + STOCK_SYMBOL + "/quote?token=" + API_KEY;
+    protected String doInBackground(String... strings) {
+        String QUERY = "https://cloud.iexapis.com/stable/stock/" + strings[0] + "/quote?token=" + API_KEY;
         Uri dataUri = Uri.parse(QUERY);
         String urlToUse = dataUri.toString();
         Log.d(TAG, "run: " + urlToUse);
@@ -55,6 +50,14 @@ public class FinancialDataLoader implements Runnable{
             return null;
         }
     }
+
+    @Override
+    protected void onPostExecute(String s) {
+        Stock newStock = parseStock(s);
+        mainActivity.addStock(newStock);
+    }
+
+
 
     // Gets string that is stock data from web for 1 stock. Returns 1 stock object
     private Stock parseStock(String s){

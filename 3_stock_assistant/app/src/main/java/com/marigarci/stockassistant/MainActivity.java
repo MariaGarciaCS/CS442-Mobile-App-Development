@@ -96,8 +96,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             for(int i = 0; i < temp.size(); i++){
                 String symbol = temp.get(i).getSymbol();
-                FinancialDataLoader fd = new FinancialDataLoader(this, symbol);
-                new Thread(fd).start();
+//                FinancialDataLoader fd = new FinancialDataLoader(this, symbol);
+//                new Thread(fd).start();
+                new FinancialDataLoader(ma).execute(symbol);
             }
 
             Collections.sort(stockList);
@@ -189,16 +190,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     //Add Stock---------------------------
-    public void addStock(String s){
-        if (stockSymbols.get(s) != null){
-            Stock stock = new Stock(s, stockSymbols.get(s));
-            stockList.add(stock);
+    public void addStock(Stock s){
+        Log.d(TAG, "addStock: " + s.getCompany());
+        ArrayList<Stock> temp = databaseHandler.loadStocks();
 
+        for(int i = 0; i < temp.size(); i ++){
+            if(temp.get(i).getSymbol().equals( s.getSymbol())){
+                s.setCompany( temp.get(i).getCompany());
+            }
         }
-        else{
-            Toast.makeText(this, "No such stock", Toast.LENGTH_SHORT).show();
-        }
-
+        stockList.add(s);
+        Collections.sort(stockList);
+        sAdapter.notifyDataSetChanged();
     }
 
     private void findStock(String symbol) {
@@ -269,8 +272,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ma.multipleStocksDialog(s);
                 }
                 else {
-                    FinancialDataLoader fd2 = new FinancialDataLoader(ma, s);
-                    new Thread(fd2).start();
+//                    FinancialDataLoader fd2 = new FinancialDataLoader(ma, s);
+//                    new Thread(fd2).start();
+                    new FinancialDataLoader(ma).execute(s);
                     sAdapter.notifyDataSetChanged();
 
                 }
