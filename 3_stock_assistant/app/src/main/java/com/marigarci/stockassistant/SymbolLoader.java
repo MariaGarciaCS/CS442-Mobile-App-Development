@@ -79,7 +79,7 @@ public class SymbolLoader implements Runnable{
         mainActivity.runOnUiThread(() -> {
             if (stockSymbols != null)
                 //Toast.makeText(mainActivity, "Loaded " + stockSymbols.size() + " stocks.", Toast.LENGTH_LONG).show();
-            mainActivity.updateData(stockSymbols);
+            mainActivity.updateSymbols(stockSymbols);
         });
     }
 

@@ -28,6 +28,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import static android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
 
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sAdapter.notifyDataSetChanged();
         }
         else{
-            netError();
+            netErrorDialog();
             //TODO: Swipe refresh
         }
     }
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sAdapter.notifyDataSetChanged();
         }
         else{
-            netError();
+            netErrorDialog();
         }
         super.onResume();
     }
@@ -128,17 +129,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(item.getItemId() == R.id.addStockBtn){
             //Check connection
             if (connected()){
-                if (stockSymbols.isEmpty()){
-                    //TODO: ADD Symb
-                }
                 addStockDialog();
             }
             else{
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("No Network Connection");
-                builder.setMessage("Need A Network Connection To Add Stocks.");
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                netErrorDialog();
             }
             return true;
         }
@@ -176,19 +170,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //Network & Connection -----------------------
-    public Boolean connected(){
+    public boolean connected(){
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (cm == null) {
-            Toast.makeText(this, "Cannot access ConnectivityManager", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        else if(netInfo != null && netInfo.isConnected()){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return netInfo != null && netInfo.isConnected();
     }
     //Add Stock---------------------------
     public void addStock(Stock s){
@@ -205,80 +190,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sAdapter.notifyDataSetChanged();
     }
 
-    private void findStock(String symbol) {
-        HashMap<String, String> found = new HashMap<String, String>();
-        for (String symb : stockSymbols.keySet()) {
-            if (symb.toUpperCase().indexOf(symbol.toUpperCase()) == 0) {
-                found.put(symb, stockSymbols.get(symb));
-            }
-        }
-//        int count = Collections.frequency(new ArrayList<String>(stockSymbols.values()), symbol);
-
-//        //One stock found
-//        if (count == 1){
-//            //TODO
-//            addStock(symbol);
-//        }
-//        //Many stocks found
-//        else if (count > 1){
-////            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-////            ArrayList<String> array = new ArrayList<String>();
-////            for (String k : found.keySet()) {
-////                array.add(k + " - " + found.get(k));
-////            }
-////            builder.setTitle("Choose a stock");
-////            final CharSequence[] sArray = array.toArray(new CharSequence[0]);
-////            builder.setItems(sArray, new DialogInterface.OnClickListener() {
-////                public void onClick(DialogInterface dialog, int which) {
-////                    addStock(sArray[which].toString());
-////
-////                }
-////            });
-////
-////            builder.setNegativeButton("Nevermind", null);
-////            AlertDialog dialog = builder.create();
-////            dialog.show();
-//        }
-//        //No stocks found
-//        else{
-//            AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
-//            builder1.setTitle("Symbol Not Found: " + symbol);
-//            AlertDialog dialog1 = builder1.create();
-//            dialog1.show();
-//        }
-
-    }
-
     //Dialogs---------------------------
-
     public void addStockDialog(){
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Enter a Stock");
+        builder.setTitle("New Stock");
+
         final EditText et = new EditText(this);
-        et.setInputType(InputType.TYPE_CLASS_TEXT | TYPE_TEXT_FLAG_CAP_CHARACTERS );
+        et.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS );
         et.setGravity(Gravity.CENTER_HORIZONTAL);
         builder.setView(et);
 
         builder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                String s = et.getText().toString();
-                boolean exists = false;
-
-                for(int j = 0; j < stockList.size() ;j++){
-                    String symbol = stockList.get(j).getSymbol();
-                    if(symbol.equals(s)){exists = true;}
-                }
-                if(exists){
-                    ma.multipleStocksDialog(s);
-                }
-                else {
-//                    FinancialDataLoader fd2 = new FinancialDataLoader(ma, s);
-//                    new Thread(fd2).start();
-                    new FinancialDataLoader(ma).execute(s);
-                    sAdapter.notifyDataSetChanged();
-
-                }
+                String symbol = et.getText().toString();
+                new FinancialDataLoader(ma).execute(symbol);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -287,14 +214,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //do nothing
             }
         });
-        builder.setMessage("Enter a Stock");
-        builder.setTitle("New Stock");
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
-    private void netError(){
+    private void netErrorDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("A Network Connection is Needed to Add Stocks");
         builder.setTitle("No Network Connection");
@@ -302,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
     }
 
-    public void multipleStocksDialog(String symb){
+    public void existingStocksDialog(String symb){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Stock Symbol " + symb + " already exists");
         builder.setTitle("Existing Stock");
@@ -311,26 +236,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
     }
 
+    public void multipleResultsDialog(ArrayList<Stock> r){
+        final ArrayList<Stock> results = r;
+
+        final CharSequence[] sArray = new CharSequence[results.size()];
+        for(int i = 0; i < results.size(); i++){
+            sArray[i] = results.get(i).getSymbol() + " - " + results.get(i).getCompany();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Make a selection");
+
+        builder.setItems(sArray, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                ArrayList<Stock> selected = new ArrayList<>();
+                selected.add(results.get(which));
+                updateData(selected);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // cancel
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     //Loaders---------------------------
 
-    public void loadStock(){
-        stockList.clear();
-
-        sAdapter.notifyDataSetChanged();
-    }
-    public void updateStock(Stock newStock){
-        stockList.add(newStock);
-    }
-
-    public void updateData(HashMap<String,String> sList) {
-        stockSymbols.clear();
-        stockSymbols.putAll(sList);
+    public void updateSymbols(HashMap<String,String> sList) {
+        if (sList != null){
+            stockSymbols.clear();
+            stockSymbols.putAll(sList);
+        }
         Log.d(TAG, "updateData: NUMSYMBOLS " + stockSymbols.size());
-        sAdapter.notifyDataSetChanged();
     }
 
-    public void updateFinancialData(Stock s){
-        stockList.add(s);
+    public void updateData(ArrayList<Stock> sList){
+        if (sList != null){
+            databaseHandler.addAll(sList);
+            ArrayList<Stock> temp = databaseHandler.loadStocks();
+            stockList.clear();
+
+            if (temp != null){
+                for (int i = 0; i < temp.size(); i++){
+                    String symbol = temp.get(i).getSymbol();
+                    new FinancialDataLoader(ma).execute(symbol);
+                }
+            }
+            Collections.sort(stockList);
+            sAdapter.notifyDataSetChanged();
+        }
     }
 
     public void downloadFailed(){
