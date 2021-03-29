@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -11,7 +12,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 
 public class FinancialDataLoader extends AsyncTask<String, Integer, String> {
     private static final String TAG = "FinancialDataLoader";
@@ -54,7 +54,7 @@ public class FinancialDataLoader extends AsyncTask<String, Integer, String> {
     @Override
     protected void onPostExecute(String s) {
         Stock newStock = parseStock(s);
-        mainActivity.addStock(newStock);
+        mainActivity.updateStockFD(newStock);
     }
 
 

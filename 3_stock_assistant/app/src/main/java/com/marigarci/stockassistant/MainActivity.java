@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import static android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
 
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private StockAdapter sAdapter;
     //New stuff
     private DatabaseHandler databaseHandler;
-    private SwipeRefreshLayout swipe;
+    private SwipeRefreshLayout swiper;
 
 
 
@@ -60,23 +61,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(sAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        //Database
-        databaseHandler = new DatabaseHandler(this);
+        //Swipe Refresh
+        swiper = findViewById(R.id.swiper);
+        swiper.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                doRefresh();
+            }
+        });
+
+        //Connection
+        if (!connected()){
+            netErrorDialog();
+            return;
+        }
 
         //Download Stock Symbols and Names
         SymbolLoader symbLoader = new SymbolLoader(this);
         new Thread(symbLoader).start();
 
-        //TODO Swipe refresh layout
-    }
-
-    //TODO: OnRefresh
-    public void onRefresh(){
-        if (connected()){
-            //Get stocks from DB
-            ArrayList<Stock> temp = databaseHandler.loadStocks();
-            stockList.clear();
-
+        //Database
+        databaseHandler = new DatabaseHandler(this);
+        ArrayList<Stock> temp = databaseHandler.loadStocks();
+        if (!temp.isEmpty()){
             for(int i = 0; i < temp.size(); i++){
                 String symbol = temp.get(i).getSymbol();
                 new FinancialDataLoader(ma).execute(symbol);
@@ -85,31 +92,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Collections.sort(stockList);
             sAdapter.notifyDataSetChanged();
         }
-        else{
-            netErrorDialog();
-            //TODO: Swipe refresh
-        }
+
+        recyclerView.computeVerticalScrollOffset();
+
     }
 
-    @Override
-    protected void onResume() {
-        if (connected()){
-            //Get stocks from DB
-            ArrayList<Stock> temp = databaseHandler.loadStocks();
-            stockList.clear();
-
-            for(int i = 0; i < temp.size(); i++){
-                String symbol = temp.get(i).getSymbol();
-                new FinancialDataLoader(ma).execute(symbol);
-            }
-
-            Collections.sort(stockList);
-            sAdapter.notifyDataSetChanged();
-        }
-        else{
+    private void doRefresh(){
+        //no connection
+        if(!connected())
+        {
+            swiper.setRefreshing(false);
             netErrorDialog();
+            return;
         }
-        super.onResume();
+
+        stockList.clear();
+        ArrayList <Stock> temp = databaseHandler.loadStocks();
+        if(!temp.isEmpty())
+        {
+            for(int index = 0 ; index < stockList.size(); index++)
+            {
+                FinancialDataLoader task = new FinancialDataLoader(MainActivity.this);
+                task.execute(stockList.get(index).getSymbol(), stockList.get(index).getCompany());
+            }
+        }
+        swiper.setRefreshing(false);
     }
 
     @Override
@@ -127,14 +134,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if(item.getItemId() == R.id.addStockBtn){
-            //Check connection
-            if (connected()){
-                addStockDialog();
-            }
-            else{
+            if (!connected()){
                 netErrorDialog();
             }
-            return true;
+            else{
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Add Stock");
+                builder.setMessage("Enter Stock Symbol");
+
+                final EditText stockSymbol = new EditText(this);
+                stockSymbol.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+                stockSymbol.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+                stockSymbol.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                builder.setView(stockSymbol);
+
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String stockSymbolText = stockSymbol.getText().toString();
+                        if(!stockSymbolText.isEmpty()){ searchStock(stockSymbolText);}
+                    }
+                });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // User cancelled the dialog
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -176,49 +208,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return netInfo != null && netInfo.isConnected();
     }
     //Add Stock---------------------------
-    public void addStock(Stock s){
-        Log.d(TAG, "addStock: " + s.getCompany());
-        ArrayList<Stock> temp = databaseHandler.loadStocks();
-
-        for(int i = 0; i < temp.size(); i ++){
-            if(temp.get(i).getSymbol().equals( s.getSymbol())){
-                s.setCompany( temp.get(i).getCompany());
-            }
+    public void updateSymbols(HashMap<String,String> sList) {
+        if (sList != null){
+            stockSymbols.clear();
+            stockSymbols.putAll(sList);
         }
-        stockList.add(s);
+        Log.d(TAG, "updateData: NUMSYMBOLS " + stockSymbols.size());
+    }
+
+    private void addStock(String s) {
+            String[] ss = s.split(" - ");
+            String symbol = ss[0].trim();
+            String name = (ss.length > 1) ? ss[1] : "";
+            for (Stock stock : stockList) {
+                if (stock.getSymbol().equalsIgnoreCase(symbol)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Duplicate Stock");
+                    builder.setMessage(String.format("Stock Symbol %s is already displayed.", symbol));
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    return;
+                }
+            }
+            FinancialDataLoader task = new FinancialDataLoader(MainActivity.this);
+            task.execute(symbol);
+        }
+
+
+
+
+
+//
+
+
+    public void updateStockFD(Stock stock) {
+        Log.d(TAG, "updateStockFD: new stock added");
+        stockList.add(stock);
         Collections.sort(stockList);
         sAdapter.notifyDataSetChanged();
     }
 
     //Dialogs---------------------------
-    public void addStockDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Enter a Stock");
-        builder.setTitle("New Stock");
-
-        final EditText et = new EditText(this);
-        et.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS );
-        et.setGravity(Gravity.CENTER_HORIZONTAL);
-        builder.setView(et);
-
-        builder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String symbol = et.getText().toString();
-                new FinancialDataLoader(ma).execute(symbol);
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                //do nothing
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
     private void netErrorDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("A Network Connection is Needed to Add Stocks");
@@ -227,14 +257,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
     }
 
-    public void existingStocksDialog(String symb){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Stock Symbol " + symb + " already exists");
-        builder.setTitle("Existing Stock");
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 
     public void multipleResultsDialog(ArrayList<Stock> r){
         final ArrayList<Stock> results = r;
@@ -267,13 +289,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //Loaders---------------------------
-
-    public void updateSymbols(HashMap<String,String> sList) {
-        if (sList != null){
-            stockSymbols.clear();
-            stockSymbols.putAll(sList);
+    private void searchStock(final String symbol) {
+        HashMap<String, String> result = new HashMap<String, String>();
+        for (String s : stockSymbols.keySet()) {
+            if (s.toUpperCase().indexOf(symbol.toUpperCase()) == 0) {
+                result.put(s, stockSymbols.get(s));
+            }
         }
-        Log.d(TAG, "updateData: NUMSYMBOLS " + stockSymbols.size());
+        switch (result.size()) {
+            case 0:
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+                builder1.setTitle("Symbol Not Found: " + symbol);
+                builder1.setMessage("Data for stock symbol");
+                AlertDialog dialog1 = builder1.create();
+                dialog1.show();
+                break;
+            case 1:
+                // add it
+//                Toast.makeText(this, "One found", Toast.LENGTH_SHORT).show();
+                addStock(symbol);
+                break;
+            default:
+                // show list dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                ArrayList<String> array = new ArrayList<String>();
+                for (String k : result.keySet()) {
+                    array.add(k + " - " + result.get(k));
+                }
+                builder.setTitle("Make a selection");
+                final CharSequence[] sArray = array.toArray(new CharSequence[0]);
+                builder.setItems(sArray, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        addStock(sArray[which].toString());
+
+                    }
+                });
+
+                builder.setNegativeButton("Nevermind", null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+        }
+
     }
 
     public void updateData(ArrayList<Stock> sList){
