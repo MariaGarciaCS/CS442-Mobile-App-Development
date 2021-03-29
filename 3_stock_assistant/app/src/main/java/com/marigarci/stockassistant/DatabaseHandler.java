@@ -37,10 +37,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Log.d(TAG, "onCreate: Making New DB");
         db.execSQL(SQL_CREATE_TABLE);
     }
-    /*
-    public boolean isIn(String symbol){
-    }
-    */
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){}
@@ -52,7 +49,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         Cursor cursor = database.query(
                 TABLE_NAME,
-                new String[] {SYMBOL,COMPANY},
+                new String[] {SYMBOL, COMPANY},
                 null,
                 null,
                 null,
@@ -63,7 +60,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             for(int i = 0; i < cursor.getCount(); i ++){
                 String symbol = cursor.getString(0);
                 String company = cursor.getString(1);
-                Stock s = new Stock( company, symbol);
+                Stock s = new Stock(symbol, company);
                 stocks.add(s);
                 cursor.moveToNext();
             }
@@ -73,45 +70,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return stocks;
     }
 
-    public void addStock(Stock stock){
-        Log.d(TAG, "addStock: Adding" + stock.getSymbol());
+    public void addStock(Stock stock) {
+        Log.d(TAG,"Adding stock: " + stock.getSymbol());
         ContentValues values = new ContentValues();
-
         values.put(SYMBOL, stock.getSymbol());
         values.put(COMPANY, stock.getCompany());
-        long key = database.insert(TABLE_NAME, null, values);
-        Log.d(TAG, "addStock: Add Complete" );
+
+        deleteStock(stock.getSymbol());
+        database.insert(TABLE_NAME, null, values);
+        Log.d(TAG,"Adding stock complete ");
     }
-
-    public void addAll(ArrayList<Stock> sList) {
-        for(int i = 0; i < sList.size(); i++){
-            Stock stock = sList.get(i);
-            ContentValues values = new ContentValues();
-
-            values.put(SYMBOL, stock.getSymbol());
-            values.put(COMPANY, stock.getCompany());
-            long key = database.insert(TABLE_NAME, null, values);
-        }
-    }
-
-
-    /*public void updateStock(Stock stock){
-        Log.d(TAG, "updateStock: Updating" + stock.getSymbol());
-        ContentValues values = new ContentValues();
-        values.put(SYMBOL, stock.getSymbol());
-        values.put(PRICE, stock.getPrice());
-        values.put(CHANGE, stock.getChange());
-        values.put(PERCENT, stock.getPercent());
-        values.put()
-    }
-    */
 
     public void deleteStock(String symbol){
         Log.d(TAG, "deleteStock: " + symbol);
-        int cnt = database.delete(TABLE_NAME,SYMBOL + " = ?", new String[]{symbol});
-        Log.d(TAG, "deleteStock: " + cnt);
+        database.delete(TABLE_NAME,SYMBOL + " = ?", new String[]{symbol});
     }
-
 
 
     public void dumpDbToLog(){

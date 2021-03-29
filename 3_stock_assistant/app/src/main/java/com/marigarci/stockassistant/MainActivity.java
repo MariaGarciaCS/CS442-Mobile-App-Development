@@ -43,11 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private RecyclerView recyclerView;
     private StockAdapter sAdapter;
+
     //New stuff
     private DatabaseHandler databaseHandler;
     private SwipeRefreshLayout swiper;
-
-
 
 
     @Override
@@ -77,20 +76,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         //Download Stock Symbols and Names
-        SymbolLoader symbLoader = new SymbolLoader(this);
-        new Thread(symbLoader).start();
+        SymbolLoader symbolLoader = new SymbolLoader(this);
+        new Thread(symbolLoader).start();
 
         //Database
         databaseHandler = new DatabaseHandler(this);
         ArrayList<Stock> temp = databaseHandler.loadStocks();
+        databaseHandler.dumpDbToLog();
+
         if (!temp.isEmpty()){
             for(int i = 0; i < temp.size(); i++){
                 String symbol = temp.get(i).getSymbol();
-                new FinancialDataLoader(ma).execute(symbol);
+                Log.d(TAG, "onCreate: Symbol in temp: " + symbol);
+                String company = temp.get(i).getCompany();
+                Log.d(TAG, "onCreate: Name in temp: " + company);
+                FinancialDataLoader task = new FinancialDataLoader(MainActivity.this);
+                task.execute(symbol);
             }
-
-            Collections.sort(stockList);
-            sAdapter.notifyDataSetChanged();
         }
 
         recyclerView.computeVerticalScrollOffset();
@@ -110,14 +112,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ArrayList <Stock> temp = databaseHandler.loadStocks();
         if(!temp.isEmpty())
         {
-            for(int index = 0 ; index < stockList.size(); index++)
+            for(int i = 0 ; i < stockList.size(); i++)
             {
                 FinancialDataLoader task = new FinancialDataLoader(MainActivity.this);
-                task.execute(stockList.get(index).getSymbol(), stockList.get(index).getCompany());
+                task.execute(stockList.get(i).getSymbol(), stockList.get(i).getCompany());
             }
         }
         swiper.setRefreshing(false);
     }
+
 
     @Override
     protected void onDestroy() {
@@ -230,20 +233,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
             }
+            databaseHandler.addStock(new Stock(symbol, name, 0.0, 0.0, 0.0));
             FinancialDataLoader task = new FinancialDataLoader(MainActivity.this);
             task.execute(symbol);
         }
 
-
-
-
-
-//
-
-
     public void updateStockFD(Stock stock) {
-        Log.d(TAG, "updateStockFD: new stock added");
+        Log.d(TAG, "updateStockFD: new stock added" + stock.getSymbol());
         stockList.add(stock);
+        databaseHandler.addStock(stock);
         Collections.sort(stockList);
         sAdapter.notifyDataSetChanged();
     }
@@ -257,36 +255,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.show();
     }
 
-
-    public void multipleResultsDialog(ArrayList<Stock> r){
-        final ArrayList<Stock> results = r;
-
-        final CharSequence[] sArray = new CharSequence[results.size()];
-        for(int i = 0; i < results.size(); i++){
-            sArray[i] = results.get(i).getSymbol() + " - " + results.get(i).getCompany();
-        }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Make a selection");
-
-        builder.setItems(sArray, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                ArrayList<Stock> selected = new ArrayList<>();
-                selected.add(results.get(which));
-                updateData(selected);
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // cancel
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 
     //Loaders---------------------------
     private void searchStock(final String symbol) {
@@ -332,22 +300,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public void updateData(ArrayList<Stock> sList){
-        if (sList != null){
-            databaseHandler.addAll(sList);
-            ArrayList<Stock> temp = databaseHandler.loadStocks();
-            stockList.clear();
-
-            if (temp != null){
-                for (int i = 0; i < temp.size(); i++){
-                    String symbol = temp.get(i).getSymbol();
-                    new FinancialDataLoader(ma).execute(symbol);
-                }
-            }
-            Collections.sort(stockList);
-            sAdapter.notifyDataSetChanged();
-        }
-    }
 
     public void downloadFailed(){
         stockList.clear();

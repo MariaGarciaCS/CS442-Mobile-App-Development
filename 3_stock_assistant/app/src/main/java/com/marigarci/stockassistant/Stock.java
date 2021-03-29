@@ -16,9 +16,9 @@ public class Stock implements Comparable<Stock> {
     public Stock(){
         this.symbol = null;
         this.company = null;
-        this.price = 0;
-        this.pChange = 0;
-        this.percent = 0;
+        this.price = 0.0;
+        this.pChange = 0.0;
+        this.percent = 0.0;
     }
     public Stock(String symbol, String company, double price, double priceChange, double percentChange){
         this.symbol = symbol;

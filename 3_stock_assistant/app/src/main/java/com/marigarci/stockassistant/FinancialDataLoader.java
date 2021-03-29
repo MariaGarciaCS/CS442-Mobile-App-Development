@@ -68,6 +68,7 @@ public class FinancialDataLoader extends AsyncTask<String, Integer, String> {
             double price = Double.parseDouble(jsonObject.getString("latestPrice"));
             double change = Double.parseDouble(jsonObject.getString("change"));
             double percent = Double.parseDouble(jsonObject.getString("changePercent"));
+
             Stock stock = new Stock(symbol, company, price, change, percent);
             Log.d(TAG, "parseStock: " + company);
             return stock;
