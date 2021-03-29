@@ -38,26 +38,29 @@ public class StockAdapter extends RecyclerView.Adapter<StockViewHolder> {
         return  new StockViewHolder(itemView);
     }
 
-    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
+    @SuppressLint({"SetTextI18n", "ResourceAsColor", "DefaultLocale"})
     @Override
     public void onBindViewHolder(@NonNull StockViewHolder holder, int position) {
         Stock s = stockList.get(position);
 
-        holder.symbol.setText((s.getSymbol()));
-        holder.company.setText(s.getCompany());
-        holder.price.setText(s.getPriceStr());
-        holder.priceChange.setText(s.getpChangeStr());
-        holder.percentChange.setText("(" + s.getPercentStr() + "%)");
-
         int color = Color.WHITE;
+        String change = "";
 
         if (s.getpChange() > 0){
              color = Color.GREEN;
+             change = String.format("\u25B2 %.2f", s.getpChange());
 
         }
         else if (s.getpChange() < 0){
              color = Color.RED;
+             change = String.format("\u25BC %.2f", s.getpChange());
         }
+
+        holder.symbol.setText((s.getSymbol()));
+        holder.company.setText(s.getCompany());
+        holder.price.setText(s.getPriceStr());
+        holder.priceChange.setText(change);
+        holder.percentChange.setText(" (" + s.getPercentStr() +")");
 
         holder.symbol.setTextColor(color);
         holder.company.setTextColor(color);
