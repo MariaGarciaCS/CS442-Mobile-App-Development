@@ -1,6 +1,7 @@
 package com.marigarci.stockassistant;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,7 @@ public class StockAdapter extends RecyclerView.Adapter<StockViewHolder> {
         return  new StockViewHolder(itemView);
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     @Override
     public void onBindViewHolder(@NonNull StockViewHolder holder, int position) {
         Stock s = stockList.get(position);
@@ -47,6 +48,22 @@ public class StockAdapter extends RecyclerView.Adapter<StockViewHolder> {
         holder.price.setText(s.getPriceStr());
         holder.priceChange.setText(s.getpChangeStr());
         holder.percentChange.setText("(" + s.getPercentStr() + "%)");
+
+        int color = Color.WHITE;
+
+        if (s.getpChange() > 0){
+             color = Color.GREEN;
+
+        }
+        else if (s.getpChange() < 0){
+             color = Color.RED;
+        }
+
+        holder.symbol.setTextColor(color);
+        holder.company.setTextColor(color);
+        holder.price.setTextColor(color);
+        holder.priceChange.setTextColor(color);
+        holder.percentChange.setTextColor(color);
     }
 
     @Override
