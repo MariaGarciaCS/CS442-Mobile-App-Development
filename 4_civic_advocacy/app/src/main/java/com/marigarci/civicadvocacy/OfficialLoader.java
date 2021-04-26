@@ -111,7 +111,6 @@ public class OfficialLoader extends AsyncTask<String, Void, String> {
                         for (int k = 0; k<jChannels.length(); k++){
                             JSONObject jChannel = jChannels.getJSONObject(k);
                             if (jChannel.getString("type").equals("Facebook")) soc.setFacebook(jChannel.getString("id"));
-                            if (jChannel.getString("type").equals("GooglePlus")) soc.setGooglePlus(jChannel.getString("id"));
                             if (jChannel.getString("type").equals("Twitter")) soc.setTwitter(jChannel.getString("id"));
                             if (jChannel.getString("type").equals("YouTube")) soc.setYoutube(jChannel.getString("id"));
                         }

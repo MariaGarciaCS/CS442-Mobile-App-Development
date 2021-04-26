@@ -4,16 +4,11 @@ import java.io.Serializable;
 
 public class Socials implements Serializable {
     private String facebook;
-    private String googlePlus;
     private String twitter;
     private String youtube;
 
     public String getFacebook() {
         return facebook;
-    }
-
-    public String getGooglePlus() {
-        return googlePlus;
     }
 
     public String getTwitter() {
@@ -27,10 +22,6 @@ public class Socials implements Serializable {
 
     public void setFacebook(String facebook) {
         this.facebook = facebook;
-    }
-
-    public void setGooglePlus(String googlePlus) {
-        this.googlePlus = googlePlus;
     }
 
     public void setTwitter(String twitter) {

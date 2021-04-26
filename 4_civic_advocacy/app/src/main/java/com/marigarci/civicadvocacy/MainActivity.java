@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             showWarning( "Data cannot be accessed/loaded without an internet connection");
         }
-
         if (locationTxt.getText().toString().equals("No Data For Location")) showWarning("No location data. Restart App.");
     }
 
@@ -85,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case R.id.search_btn:
-                //TODO: add Search
+                searchBtn();
 
             default:return super.onOptionsItemSelected(item);
         }
