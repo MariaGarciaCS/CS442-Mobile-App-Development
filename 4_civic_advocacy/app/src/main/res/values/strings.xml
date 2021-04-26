@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Civic Advocacy</string>
+    <string name="network_warning_message">Data cannot be accessed/loaded without an internet connection</string>
 </resources>

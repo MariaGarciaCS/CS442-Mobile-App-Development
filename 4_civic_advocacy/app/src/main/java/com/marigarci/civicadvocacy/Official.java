@@ -1,9 +1,9 @@
 package com.marigarci.civicadvocacy;
 
-import java.nio.channels.Channel;
+import java.io.Serializable;
 
-public class Official {
-    //TODO: serializable?
+public class Official implements Serializable {
+
 
     private String name;
     private String office;
@@ -13,11 +13,15 @@ public class Official {
     private String website;
     private String email;
     private String image;
-    private Channel channel;
+    private Socials socials;
 
     //Constructors
     public Official(String name, String office) {
         this.name = name;
+        this.office = office;
+    }
+
+    public Official(String office){
         this.office = office;
     }
 
@@ -55,8 +59,8 @@ public class Official {
         return image;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public Socials getSocials() {
+        return socials;
     }
 
 
@@ -94,7 +98,7 @@ public class Official {
         this.image = image;
     }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
+    public void setSocials(Socials socials) {
+        this.socials = socials;
     }
 }
