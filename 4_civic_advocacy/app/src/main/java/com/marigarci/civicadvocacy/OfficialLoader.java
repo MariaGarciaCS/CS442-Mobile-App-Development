@@ -2,6 +2,7 @@ package com.marigarci.civicadvocacy;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,119 +17,163 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-public class OfficialLoader extends AsyncTask<String, Void, String> {
-    private String urlPrefix = "https://www.googleapis.com/civicinfo/v2/representatives?key=AIzaSyDc-ojj6lx4hMY9RrqfmxaD8JhfmEiPRaA&address=";
-    private MainActivity ma;
+public class OfficialLoader implements Runnable {
+    private static final String TAG = "OfficialLoader";
+    private MainActivity mainActivity;
+    private List<Official> officials = null;
+    private myLocation location = null;
+    public String locationrec;
 
-    public OfficialLoader(MainActivity ma){
-        this.ma = ma;
+    public OfficialLoader(MainActivity ma,String locationrec) {
+        mainActivity = ma;
+        this.locationrec=locationrec;
+    }
+
+
+
+    private void parseJSON(String s) {
+        try {
+            JSONObject jsonObject = new JSONObject(s);
+            JSONObject normalizedInputJSONObject = jsonObject.getJSONObject("normalizedInput");
+
+            //Get location data from JSON
+            location = new myLocation();
+            officials = new ArrayList<>();
+
+            location.setCity(normalizedInputJSONObject.getString("city"));
+            location.setState(normalizedInputJSONObject.getString("state"));
+            location.setZip(normalizedInputJSONObject.getString("zip"));
+
+            JSONArray officialJSONArray = jsonObject.getJSONArray("officials");
+            for (int i = 0; i < officialJSONArray.length(); i++) {
+                Official official = new Official();
+                JSONObject officialJSONObject = officialJSONArray.getJSONObject(i);
+
+                official.setName(officialJSONObject.getString("name"));
+                if (officialJSONObject.has("address")) {
+                    JSONObject addressJSON = officialJSONObject.getJSONArray("address").getJSONObject(0);
+                    official.setAddress(addressJSON.getString("line1"));
+                    if (addressJSON.has("line2")) {
+                        official.setAddress(official.getAddress() + ", " + addressJSON.getString("line2"));
+                    }
+                    if (addressJSON.has("line3")) {
+                        official.setAddress(official.getAddress() + ", " + addressJSON.getString("line3"));
+                    }
+                    official.setCity(addressJSON.getString("city"));
+                    official.setState(addressJSON.getString("state"));
+                    official.setZip(addressJSON.getString("zip"));
+                }
+                if (officialJSONObject.has("party")) {
+                    official.setParty(officialJSONObject.getString("party"));
+                } else {
+                    official.setParty("Unknown");
+                }
+                if (officialJSONObject.has("phones")) {
+                    official.setPhone(officialJSONObject.getJSONArray("phones").get(0).toString());
+                } else {
+                    official.setPhone("No Data Provided");
+                }
+                if (officialJSONObject.has("urls")) {
+                    official.setWebsite(officialJSONObject.getJSONArray("urls").get(0).toString());
+                } else {
+                    official.setWebsite("No Data Provided");
+                }
+                if (officialJSONObject.has("emails")) {
+                    official.setEmail(officialJSONObject.getJSONArray("emails").get(0).toString());
+                } else {
+                    official.setEmail("No Data Provided");
+                }
+                if (officialJSONObject.has("photoUrl")) {
+                    official.setImage(officialJSONObject.getString("photoUrl"));
+                } else {
+                    official.setImage("No Data Provided");
+                }
+
+                if (officialJSONObject.has("channels")) {
+                    JSONArray channelsJSONArray = officialJSONObject.getJSONArray("channels");
+                    HashMap<String, String> channels = new HashMap<>();
+                    for (int j = 0; j < channelsJSONArray.length(); j++) {
+                        JSONObject channelJSONObject = channelsJSONArray.getJSONObject(j);
+                        channels.put(channelJSONObject.getString("type"), channelJSONObject.getString("id"));
+                    }
+                    official.setSocials(channels);
+                }
+                officials.add(official);
+            }
+
+            JSONArray officeJSONArray = jsonObject.getJSONArray("offices");
+            for (int i = 0; i < officeJSONArray.length(); i++) {
+                JSONObject officeJSONObject = officeJSONArray.getJSONObject(i);
+
+                JSONArray officialIndices = officeJSONObject.getJSONArray("officialIndices");
+                for (int j = 0; j < officialIndices.length(); j++) {
+                    officials.get(officialIndices.getInt(j)).setOffice(officeJSONObject.getString("name"));
+                }
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    protected String doInBackground(String... params) {
-        String location = params[0];
+    public void run() {
+
+
 
         StringBuilder sb = new StringBuilder();
         try {
-            URL url = new URL(urlPrefix + location);
+            URL url = new URL("https://www.googleapis.com/civicinfo/v2/representatives?key=" +
+                    "AIzaSyDc-ojj6lx4hMY9RrqfmxaD8JhfmEiPRaA" +
+                    "&address=" +
+                    locationrec);
+
+
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            Log.d(TAG, "doInBackground: Response Code: " + conn.getResponseCode() + ", " + conn.getResponseMessage());
+
             conn.setRequestMethod("GET");
+
             InputStream is = conn.getInputStream();
             BufferedReader reader = new BufferedReader((new InputStreamReader(is)));
 
             String line;
-            while ((line = reader.readLine()) != null) sb.append(line).append("\n");
-            return sb.toString();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(String s) {
-        parseJson(s);
-    }
-
-    private void parseJson(String s) {
-
-
-        try {
-            JSONObject jObjMain = new JSONObject(s);
-            JSONObject jNormalInput = jObjMain.getJSONObject("normalizedInput");
-
-            String locationText = jNormalInput.getString("city")+", "+jNormalInput.getString("state")+" "+jNormalInput.getString("zip");
-            ma.setLocationTxt(locationText);
-            JSONArray jArrayOffices = jObjMain.getJSONArray("offices");
-            JSONArray jArrayOfficials = jObjMain.getJSONArray("officials");
-
-            int length = jArrayOffices.length();
-            ma.clearOfficial();
-
-            for (int i = 0; i<length; i++){
-                JSONObject jObj = jArrayOffices.getJSONObject(i);
-                String officeName = jObj.getString("name");
-
-                JSONArray indicesStr = jObj.getJSONArray("officialIndices");
-                ArrayList<Integer> indices = new ArrayList<>();
-
-                for (int j = 0; j<indicesStr.length(); j++){
-                    int pos = Integer.parseInt(indicesStr.getString(j));
-                    Official official = new Official(officeName);
-                    JSONObject jOfficial = jArrayOfficials.getJSONObject(pos);
-
-                    official.setName(jOfficial.getString("name"));
-
-                    JSONArray jAddresses = jOfficial.getJSONArray("address");
-                    JSONObject jAddress = jAddresses.getJSONObject(0);
-
-                    String address="";
-
-                    if (jAddress.has("line1")) address+=jAddress.getString("line1")+'\n';
-                    if (jAddress.has("line2")) address+=jAddress.getString("line2")+'\n';
-                    if (jAddress.has("line3")) address+=jAddress.getString("line3")+'\n';
-                    if (jAddress.has("city")) address+=jAddress.getString("city")+", ";
-                    if (jAddress.has("state")) address+=jAddress.getString("state")+' ';
-                    if (jAddress.has("zip")) address+=jAddress.getString("zip");
-
-                    official.setAddress(address);
-
-                    if (jOfficial.has("party")) official.setParty(jOfficial.getString("party"));
-                    if (jOfficial.has("phones")) official.setPhone(jOfficial.getJSONArray("phones").getString(0));
-                    if (jOfficial.has("urls")) official.setWebsite(jOfficial.getJSONArray("urls").getString(0));
-                    if (jOfficial.has("emails")) official.setEmail(jOfficial.getJSONArray("emails").getString(0));
-
-                    if (jOfficial.has("channels")){
-                        Socials soc = new Socials();
-
-                        JSONArray jChannels = jOfficial.getJSONArray("channels");
-                        for (int k = 0; k<jChannels.length(); k++){
-                            JSONObject jChannel = jChannels.getJSONObject(k);
-                            if (jChannel.getString("type").equals("Facebook")) soc.setFacebook(jChannel.getString("id"));
-                            if (jChannel.getString("type").equals("Twitter")) soc.setTwitter(jChannel.getString("id"));
-                            if (jChannel.getString("type").equals("YouTube")) soc.setYoutube(jChannel.getString("id"));
-                        }
-                        official.setSocials(soc);
-                    }
-
-                    if (jOfficial.has("photoUrl")) official.setImage(jOfficial.getString("photoUrl"));
-                    ma.addOfficial(official);
-                }
-
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append('\n');
             }
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e){
-            return;
+            Log.d(TAG, "doInBackground: " + sb.toString());
+
+        } catch (Exception e) {
+            Log.e(TAG, "doInBackground: ", e);
+            handleResults(null);
+        }
+        if (sb == null) {
+
+        } else if (sb.toString().isEmpty()) {
+
+        } else {
+            handleResults(sb.toString());
         }
     }
 
+    private void handleResults(final String s) {
+        if (s == null) {
+            Log.d(TAG, "handleResults: Failure in data download");
+            return;
+        }
+        parseJSON(s);
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.getOfficialsInfo(location, officials);
+            }
+        });
+
+    }
 
 }

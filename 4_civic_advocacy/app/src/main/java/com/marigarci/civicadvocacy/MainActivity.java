@@ -1,192 +1,302 @@
 package com.marigarci.civicadvocacy;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+import android.Manifest;
+import android.app.AlertDialog;
+
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
+import android.location.Location;
+import android.location.LocationManager;
+
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private String TAG = "MainAct";
-    private MainActivity ma;
+    private static final String TAG = "MainActivity";
+    private int MY_PERM_REQUEST_CODE = 12345;
+    private Location start;
+    private boolean showingInfo = false;
+
     private RecyclerView recyclerView;
     private OfficialAdapter oAdapter;
-    private ArrayList<Official> olist = new ArrayList<>();
+    private TextView myLocation;
+    private myLocation locationSearch;
+    private TextView netErrorTextView;
 
-    private ConnectivityManager cm;
-
-    private Locator locator;
-
-    private TextView locationTxt;
-    private TextView warning;
+    private List<Official> mOfficialList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ma = this;
+        myLocation = (TextView) findViewById(R.id.location_textview);
+        netErrorTextView = (TextView) findViewById(R.id.errorTextView);
 
-        locationTxt = (TextView) findViewById(R.id.locationTxt);
-
-        //Recylcer + Adapter
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        oAdapter = new OfficialAdapter(olist, this);
-        recyclerView.setAdapter(oAdapter);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new Divider(this));
 
-        //Warning
-        warning = (TextView) findViewById(R.id.ma_warning);
+        oAdapter = new OfficialAdapter(this, mOfficialList);
+        recyclerView.setAdapter(oAdapter);
 
-        //Network Check
-        if (connected()){
-            locator = new Locator(this);
-        } else {
-            showWarning( "Data cannot be accessed/loaded without an internet connection");
-        }
-        if (locationTxt.getText().toString().equals("No Data For Location")) showWarning("No location data. Restart App.");
+        callOfficialLoader();
+
     }
 
-    //Options Menu---------------------------
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent;
-        switch (item.getItemId()){
-            case R.id.info_btn:
-                intent = new Intent(this, About.class);
-                startActivity(intent);
-                return true;
+        // Handle item selection
+        switch (item.getItemId()) {
             case R.id.search_btn:
-                searchBtn();
-
-            default:return super.onOptionsItemSelected(item);
+                showEnterZipDialog();
+                return true;
+            case R.id.info_btn:
+                Intent aboutIntent = new Intent(this, About.class);
+                startActivity(aboutIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
-    //Main Activity Actions ---------------------------
-    public void onClick(View v) {
-        int pos = recyclerView.getChildAdapterPosition(v);
-        Intent intent = new Intent(this, OfficialActivity.class);
-        intent.putExtra("location", locationTxt.getText().toString());
-        intent.putExtra("official", olist.get(pos));
-        startActivityForResult(intent, 1);
+    @Override
+    protected void onStop() {
+        Log.d(TAG, "onDestroy: Inside On Stop!");
+        saveToSharedPref("");
+        super.onStop();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 
-    public void searchBtn() {
-        LayoutInflater inflater = LayoutInflater.from(this);
-        final View view = inflater.inflate(R.layout.dialog, null);
+    private boolean checkPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // No Permission yet
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERM_REQUEST_CODE);
+            //Log.d(TAG, "checkPermission: ACCESS_FINE_LOCATION Permission requested, awaiting response.");
+            return false; // Do not yet have permission - but I just asked for it
+        } else {
+            //Log.d(TAG, "checkPermission: Already have ACCESS_FINE_LOCATION Permission for this app.");
+            return true;  // I already have this permission
+        }
+    }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Enter a City, State or Zip code");
-        builder.setView(view);
+    private void callOfficialLoader() {
+        SharedPreferences prefs = getSharedPreferences("SharedPref", MODE_PRIVATE);
+        String location = prefs.getString("location", "");
+        Log.d(TAG, "callOfficialLoader: Location::" + location);
+        if (!location.equalsIgnoreCase("")) {
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            OfficialLoader Dataloader = new OfficialLoader(this,location);
+            new Thread(Dataloader).start();
 
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                EditText inputTextView = (EditText) view.findViewById(R.id.inputTxt);
-                String input = inputTextView.getText().toString();
-
-                OfficialLoader asyncDataLoader = new OfficialLoader(ma);
-                asyncDataLoader.execute(input);
+        } else {
+            boolean havePermission = checkPermission();
+            if (havePermission) {
+                findLocation();
             }
-        });
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == MY_PERM_REQUEST_CODE) {
+            if (grantResults.length == 0) {
+                Log.d(TAG, "onRequestPermissionsResult: Somehow I got an empty 'grantResults' array");
+                return;
             }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("TAG", "Fine location permission granted");
+                findLocation();
+
+            } else {
+                Toast.makeText(this, "Address cannot be acquired from the provided latitude/longitude", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
     }
 
 
-    //Location----------------------------------------------------------------
+    public void findLocation() {
+        start = null;
+        long timeNow = System.currentTimeMillis();
 
-    public void setLocation(double lat, double lon){
-        List<Address> addresses = null;
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-
-        try {
-            addresses = geocoder.getFromLocation(lat,lon, 1);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (addresses == null){
-            Log.d(TAG, "setLocation: address is null");
-
-        }else{
-            //TODO:Set Address
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) {
+            Toast.makeText(this, "No myLocation services available", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        OfficialLoader ol = new OfficialLoader(this);
+        StringBuilder sb = new StringBuilder();
+        for (String providerName : locationManager.getAllProviders()) {
+            sb.append("PROVIDER: ").append(providerName).append("\n");
 
-        //todo: set address
-        //ol.execute(locationTextView.getText().toString());
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+
+            Log.d(TAG, "findLocation: "+providerName);
+            //String bestProvider = locationManager.getBestProvider(criteria, true);
+
+            android.location.Location loc = locationManager.getLastKnownLocation(providerName);
+            Log.d(TAG, "findLocation: "+ loc);
+
+            if (loc != null) {
+                sb.append("myLocation found:\n");
+                sb.append("  Accuracy: ").append(loc.getAccuracy()).append("m\n");
+                sb.append("  Time: ").append((timeNow - loc.getTime()) / 1000).append("sec\n");
+                sb.append("  Latitude: ").append(loc.getLatitude()).append("\n");
+                sb.append("  Longitude: ").append(loc.getLongitude()).append("\n\n");
+                if (start == null || loc.getAccuracy() < start.getAccuracy()) {
+                    start = new Location(loc);
+                }
+            } else {
+                sb.append("No location for ").append(providerName).append("\n");
+            }
+        }
+        if (start == null)
+            sb.append("No location provider available :(");
+        else
+            sb.append(String.format(Locale.US, "\n\nBest Provider: %s (%.2f)",
+                    start.getProvider(), start.getAccuracy()));
+        getInfo();
+
     }
 
-    public void setLocationTxt(String loc){
-        locationTxt.setText(loc);
+    public void getInfo() {
+        int numResults = 10;
+        if (start == null) {
+            myLocation.setText("No Data for Location");
+            netErrorTextView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+            return;
+        }
+        if (!showingInfo) {
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            List<Address> addresses;
+            StringBuilder sb = new StringBuilder();
+            try {
+                addresses = geocoder.getFromLocation(
+                        start.getLatitude(), start.getLongitude(), numResults);
+                Log.d(TAG, "getInfo:1 Addresses"+addresses);
+                for (Address a : addresses) {
+                    if (TextUtils.isDigitsOnly(a.getFeatureName().replace("-", ""))) {
+                        saveToSharedPref(a.getPostalCode());
+                        callOfficialLoader();
+                        break;
+                    } else
+                        sb.append(a.getFeatureName()).append("\n");
+                }
+
+            } catch (Exception e) {
+                Toast.makeText(this, "Address cannot be acquired from provided latitude/longitude", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+            showingInfo = true;
+        } else {
+            findLocation();
+            showingInfo = false;
+        }
+
     }
 
-    //Officials---------------------------
-    public void addOfficial(Official of){
-        olist.add(of);
+    public void getOfficialsInfo(myLocation myLoc, List<Official> officials) {
+        mOfficialList.clear();
+        locationSearch = myLoc;
+        if (myLocation != null && officials != null) {
+            recyclerView.setVisibility(View.VISIBLE);
+            netErrorTextView.setVisibility(View.GONE);
+            myLocation.setText(myLoc.getCity() + ", " + myLoc.getState() + " " + myLoc.getZip());
+            mOfficialList.addAll(officials);
+        } else {
+            recyclerView.setVisibility(View.GONE);
+            netErrorTextView.setVisibility(View.VISIBLE);
+            myLocation.setText("No Data For Location");
+        }
         oAdapter.notifyDataSetChanged();
     }
 
-    public void clearOfficial(){ olist.clear();
+    public void showEnterZipDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.location_dialog, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText enterCityEditText = (EditText) dialogView.findViewById(R.id.location_edittext);
+        enterCityEditText.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        dialogBuilder.setTitle("Enter a city, State or a Zip code");
+        dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                saveToSharedPref(enterCityEditText.getText().toString());
+                callOfficialLoader();
+
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //pass
+            }
+        });
+        AlertDialog enterStockSymbolEditTextDialog = dialogBuilder.create();
+        enterStockSymbolEditTextDialog.show();
     }
 
-    //Network Connection-------------------
-    public boolean connected(){
-        cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo.isConnectedOrConnecting() && networkInfo !=null){
-            return true;
-        }else {
-            return false;
-        }
+    public myLocation getmyLocation() {
+        return locationSearch;
     }
 
-    //Warnings-----------------------------
-    public void showWarning(String msg){
-        warning.setVisibility(View.VISIBLE);
-        warning.setText(msg);
-    }
+    private void saveToSharedPref(String address) {
+        Log.d(TAG, "saveToSharedPref: ");
+        SharedPreferences sharedPreferences = getSharedPreferences("SharedPref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("location", address);
+        editor.apply();
 
-    public void closeWarning(){
-        warning.setVisibility(View.INVISIBLE);
+        SharedPreferences prefs = getSharedPreferences("SharedPref", MODE_PRIVATE);
+        String location = prefs.getString("location", "");
+        Log.d(TAG, "saveToSharedPref: Location::" + location);
     }
 
 }

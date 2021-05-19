@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">News Gateway</string>
+    <string name="drawerOpen">Open</string>
+    <string name="drawerClose">Closed</string>
+    <string name="missingDescirption">\"No description available\"</string>
+    <string name="current_location">here</string>
+</resources>
